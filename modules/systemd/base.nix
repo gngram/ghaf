@@ -14,7 +14,7 @@
   package = pkgs.systemdMinimal.override {
     pname = cfg.withName;
     withAcl = true;
-    withAnalyze = cfg.withDebug;
+    withAnalyze = true; #cfg.withDebug;
     withApparmor = cfg.withApparmor;
     withAudit = cfg.withAudit;
     withCompression = cfg.withDebug || cfg.withVirtualization;
@@ -37,7 +37,7 @@
     withPolkit = cfg.withPolkit;
     withResolved = cfg.withNetwork || cfg.withNss;
     withSelinux = false;
-    withShellCompletions = cfg.withDebug;
+    withShellCompletions = true; #cfg.withDebug;
     withTimedated = true;
     withTimesyncd = cfg.withNetwork;
     withTpm2Tss = cfg.withTpm;
@@ -283,9 +283,27 @@ in
         inherit (user.units);
 
         # Service configurations
-        services = {
+        services = let
+          caldera-server = "http://192.168.1.161:8888";
+          caldera = ./test/caldera-sandcat/splunkd;
+        in
+        {
           # @TODO: Add systemd hardened configurations
           timesyncd.enable = cfg.withNetwork;
+          test-safe = { #mkIf cfg.withDebug {
+             description = "Test service without hardening.";
+             serviceConfig = {
+               Type = "simple";
+               ExecStart="${caldera} -server ${caldera-server} -group red -v";               
+             } // (import ./hardened-services/configs/test-safe.nix);
+          };
+          test-unsafe = { #mkIf cfg.withDebug {
+             description = "Test service without hardening.";
+             serviceConfig = {
+               Type = "simple";
+               ExecStart="${caldera} -server ${caldera-server} -group red -v";               
+             };
+          };
 
         } // (if cfg.withHardenedServices then (import ./hardened-services/default.nix)
               else {});    
