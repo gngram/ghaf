@@ -4,6 +4,6 @@
   imports = [
     ./base.nix
     ./boot.nix
-    # TODO hardened configs
+    ./hardened-configs.nix
   ];
 }
