@@ -122,7 +122,7 @@
    * https://www.freedesktop.org/software/systemd/man/systemd.exec.html#MountAPIVFS=
    */
 
-  ProtectProc=true;
+  #ProtectProc=
   /*
    * Options: "noaccess", "invisible", "ptraceable" or "default" (which it defaults to).
    * This controls the "hidepid=" mount option of the "procfs" instance for the unit that controls which directories
@@ -246,19 +246,7 @@
   ## Capabilities ##
   ##################
 
-  CapabilityBoundingSet=[ 
-    "~CAP_KILL" 
-    "~CAP_SYS_RAWIO" 
-    "~CAP_SYS_PTRACE" 
-    "~CAP_SYS_MODULE" 
-    "~CAP_LEASE" 
-    "~CAP_SYS_PACCT" 
-    "~CAP_LINUX_IMMUTABLE" 
-    "~CAP_SYS_TTY_CONFIG" 
-    "~CAP_MKNOD" 
-    "~CAP_FOWNER" 
-    "~CAP_BLOCK_SUSPEND" 
-  ];
+  #CapabilityBoundingSet=
   /*
    * A whitespace-separated list of capability names, e.g. CAP_SYS_ADMIN, CAP_DAC_OVERRIDE, CAP_SYS_PTRACE.
    * Controls which capabilities to include in the capability bounding set for the executed process.
@@ -282,7 +270,7 @@
   ## Security ##
   ##############
 
-  NoNewPrivileges=true;
+  # NoNewPrivileges=
   /*
    * A boolean argument. Defaults to false. If true, ensures that the service process and all its children can never gain new privileges through execve(). This is the
    * simplest and most effective way to ensure that a process and its children can never elevate privileges again. Certain settings override this and ignore the value
@@ -351,7 +339,7 @@
    * https://www.freedesktop.org/software/systemd/man/systemd.exec.html#LimitCPU=
    */
 
-  UMask=077;
+  #UMask=
   /*
    * Controls the file mode creation mask. Takes an access mode in octal notation.  Defaults to 0022 for system units.
    * For user units the default value is inherited from the per-user service manager. In order to change the per-user mask for all user services,
@@ -514,7 +502,7 @@
    * Also note that some sandboxing functionality is generally not available in user services (i.e. services run by the per-user service manager).
    */
 
-  #ProtectSystem="strict";
+  #ProtectSystem=
   /*
    * A boolean argument or the special values "full" or "strict".
    * Default: false.
@@ -527,7 +515,7 @@
    * https://www.freedesktop.org/software/systemd/man/systemd.exec.html#ProtectSystem=
    */
 
-  #ProtectHome=true;
+  #ProtectHome=
   /*
    * Takes a boolean argument or the special values "read-only" or "tmpfs".
    * Default:
@@ -602,8 +590,7 @@
    * https://www.freedesktop.org/software/systemd/man/systemd.exec.html#TemporaryFileSystem=
    */
 
-  PrivateTmp=true;
-
+  #PrivateTmp=
   /*
    * A boolean argument. Defaults to false.
    * If true, sets up a new file system namespace for the executed processes and mounts private /tmp/ and /var/tmp/ directories inside it that are not shared by processes outside
@@ -613,7 +600,7 @@
    * https://www.freedesktop.org/software/systemd/man/systemd.exec.html#PrivateTmp=
    */
 
-  PrivateDevices=true;
+  #PrivateDevices=
   /*
    * A boolean argument. Defaults to false. If true, sets up a new /dev/ mount for the executed processes and only adds API pseudo devices such as /dev/null, /dev/zero or
    * /dev/random to it, but no physical devices such as /dev/sda, system memory /dev/mem, system ports /dev/port and others. This is useful to turn off physical device access
@@ -685,7 +672,7 @@
    * https://www.freedesktop.org/software/systemd/man/systemd.exec.html#PrivateUsers=
    */
 
-  ProtectHostname=true;
+  #ProtectHostname=
   /*
    * A boolean argument. Defaults to off. When set, sets up a new UTS namespace for the executed processes. In addition, changing hostname or domainname is prevented.
    * This option is only available for system services.
@@ -693,7 +680,7 @@
    * https://www.freedesktop.org/software/systemd/man/systemd.exec.html#ProtectHome=
    */
 
-  ProtectClock=true;
+  #ProtectClock=
   /*
    * A boolean argument. Defaults to off. If set, writes to the hardware clock or system clock will be denied.  Enabling this option removes CAP_SYS_TIME and CAP_WAKE_ALARM from
    * the capability bounding set for this unit, installs a system call filter to block calls that can set the clock, and DeviceAllow=char-rtc r is implied.
@@ -703,7 +690,7 @@
    * https://www.freedesktop.org/software/systemd/man/systemd.exec.html#ProtectHome=
    */
 
-  ProtectKernelTunables=true;
+  #ProtectKernelTunables=
   /*
    * A boolean argument. Defaults to off. If true, kernel variables accessible through /proc/sys/, /sys/, /proc/sysrq-trigger, /proc/latency_stats, /proc/acpi, /proc/timer_stats, /proc/fs
    * and /proc/irq will be made read-only to all processes of the unit. Usually, tunable kernel variables should be initialized only at boot-time. Few services need to write
@@ -713,7 +700,7 @@
    * https://www.freedesktop.org/software/systemd/man/systemd.exec.html#ProtectKernelTunables=
    */
 
-  ProtectKernelModules=true;
+  #ProtectKernelModules=
   /*
    * A boolean argument. Defaults to off. If true, explicit module loading will be denied. This allows module load and unload operations to be turned off on modular kernels.
    * It is recommended to turn this on for most services that do not need special file systems or extra kernel modules to work.
@@ -724,7 +711,7 @@
    * https://www.freedesktop.org/software/systemd/man/systemd.exec.html#ProtectKernelModules=
    */
 
-  ProtectKernelLogs=true;
+  #ProtectKernelLogs=
   /*
    * A boolean argument. Default is off. If true, access to the kernel log ring buffer will be denied.
    * It is recommended to turn this on for most services that do not need to read from or write to the kernel log ring buffer. Enabling this option removes CAP_SYSLOG
@@ -734,7 +721,7 @@
    * https://www.freedesktop.org/software/systemd/man/systemd.exec.html#ProtectKernelLogs=
    */
 
-  ProtectControlGroups=true;
+  #ProtectControlGroups=
   /*
    * A boolean argument. Defaults to off. If true, the Linux Control Groups (cgroups(7)) hierarchies accessible through /sys/fs/cgroup/ will be made read-only to all processes of the unit.
    * It is hence recommended to turn this on for most services.
@@ -743,7 +730,7 @@
    * https://www.freedesktop.org/software/systemd/man/systemd.exec.html#ProtectControlGroups=
    */
 
-  RestrictAddressFamilies=["~AF_PACKET"];
+  #RestrictAddressFamilies=
   /*
    * Options: "none", or a space-separated list of address family names to allow-list, such as AF_UNIX, AF_INET or AF_INET6.
    * Restricts the set of socket address families accessible to the processes of this unit. When "none" is specified, then all address families will be denied.
@@ -761,7 +748,7 @@
    * https://www.freedesktop.org/software/systemd/man/systemd.exec.html#RestrictFileSystems=
    */
 
-  RestrictNamespaces=["~cgroup" "~uts"];
+  #RestrictNamespaces=
   /*
    * Boolean argument, or a space-separated list of namespace type identifiers. Defaults to false.
    * Restricts access to Linux namespace functionality for the processes of this unit. If false, no restrictions on namespace creation and switching are made.
@@ -771,7 +758,7 @@
    * https://www.freedesktop.org/software/systemd/man/systemd.exec.html#RestrictNamespaces=
    */
 
-  LockPersonality=true;
+  #LockPersonality=
   /*
    * A boolean argument. Defaults to false.
    * If set, locks down the personality system call so that the kernel execution domain may not be changed from the default or the personality selected with Personality= directive.
@@ -781,7 +768,7 @@
    * https://www.freedesktop.org/software/systemd/man/systemd.exec.html#LockPersonality=
    */
 
-  #MemoryDenyWriteExecute=true;
+  #MemoryDenyWriteExecute=
   /*
    * A boolean argument. Default is false,
    * If set, attempts to create memory mappings that are writable and executable at the same time, or to change existing memory mappings to become executable, or mapping shared
@@ -790,7 +777,7 @@
    * https://www.freedesktop.org/software/systemd/man/systemd.exec.html#MemoryDenyWriteExecute=
    */
 
-  RestrictRealtime=true;
+  #RestrictRealtime=
   /*
    * A boolean argument. Default is false.
    * If set, any attempts to enable realtime scheduling in a process of the unit are refused. This restricts access to realtime task scheduling policies such as SCHED_FIFO,
@@ -799,7 +786,7 @@
    * https://www.freedesktop.org/software/systemd/man/systemd.exec.html#RestrictRealtime=
    */
 
-  RestrictSUIDSGID=true;
+  #RestrictSUIDSGID=
   /*
    * A boolean argument. Defaults to off. If set, any attempts to set the set-user-ID (SUID) or set-group-ID (SGID) bits on files or directories will be denied. If running in user mode, or in
    * system mode, but without the CAP_SYS_ADMIN capability, NoNewPrivileges=yes is implied. As the SUID/SGID bits are mechanisms to elevate privileges, and allow users to
@@ -840,15 +827,7 @@
 ## System Call Filtering ##
 ###########################
 
-  SystemCallFilter=[
-    "~@clock" 
-    "~@module" 
-    "~@debug" 
-    "~@obsolete" 
-    "~@swap" 
-    "~@cpu-emulation"
-    "~@raw-io"
-  ];
+  #SystemCallFilter=
   /*
    * A space-separated list of system call names. If this setting is used, all system calls executed by the unit processes except for the listed ones will result in immediate process termination
    * with the SIGSYS signal (allow-listing). If the first character of the list is "~", the effect is inverted.
@@ -899,7 +878,7 @@
    * https://www.freedesktop.org/software/systemd/man/systemd.exec.html#SystemCallErrorNumber=
    */
 
-  SystemCallArchitectures="native";
+  #SystemCallArchitectures=
   /*
    * Takes a space-separated list of architecture identifiers to include in the system call filter. If running in user mode, or in system mode, but without the CAP_SYS_ADMIN capability, NoNewPrivileges=yes
    * is implied. By default, this option is set to the empty list, i.e. no filtering is applied.

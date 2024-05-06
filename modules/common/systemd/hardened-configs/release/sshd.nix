@@ -4,10 +4,10 @@
   ##############
 
   # PrivateNetwork=true;
-  # IPAccounting=yes
+  # IPAccounting=yes;
   # IPAddressDeny="any";
   RestrictAddressFamilies = [
-    #"~AF_PACKET"
+    "~AF_PACKET"
     #"~AF_NETLINK"
     #"~AF_UNIX"
     #"~AF_INET"
@@ -19,8 +19,8 @@
   ###############
 
   # ProtectHome=true;
-  ProtectSystem = "full";
-  ProtectProc = "noaccess";
+  # ProtectSystem="full";
+  ProtectProc = "invisible";
   # ReadWritePaths=[ "/etc"];
   PrivateTmp = true;
 
@@ -41,7 +41,7 @@
   ###########
 
   # PrivateDevices=false;
-  # DeviceAllow=/dev/null
+  DeviceAllow = ["/dev/video0" "/dev/video1" "/dev/video2" "/dev/video3" "/dev/media0" "/dev/media1"];
 
   ##########
   # Kernel #
@@ -55,14 +55,14 @@
   # Misc #
   ########
 
-  Delegate = false;
+  # Delegate=false;
   # KeyringMode="private";
   NoNewPrivileges = true;
   UMask = 077;
   ProtectHostname = true;
   ProtectClock = true;
   ProtectControlGroups = true;
-  RestrictNamespaces = true;
+  RestrictNamespaces = ["~cgroup" "~uts"];
   /*
     RestrictNamespaces=[
    #"~user"
@@ -75,7 +75,7 @@
   ];
   */
   LockPersonality = true;
-  MemoryDenyWriteExecute = true;
+  # MemoryDenyWriteExecute=true;
   RestrictRealtime = true;
   RestrictSUIDSGID = true;
   # RemoveIPC=true
@@ -98,10 +98,10 @@
     "~CAP_LINUX_IMMUTABLE"
     # "~CAP_IPC_LOCK"
     "~CAP_SYS_MODULE"
-    # "~CAP_SYS_TTY_CONFIG"
-    "~CAP_SYS_BOOT"
-    "~CAP_SYS_CHROOT"
-    # "~CAP_BLOCK_SUSPEND"
+    "~CAP_SYS_TTY_CONFIG"
+    # "~CAP_SYS_BOOT"
+    # "~CAP_SYS_CHROOT"
+    "~CAP_BLOCK_SUSPEND"
     "~CAP_LEASE"
     "~CAP_MKNOD"
     # "~CAP_CHOWN"
@@ -123,7 +123,7 @@
     # "~CAP_AUDIT_CONTROL"
     # "~CAP_AUDIT_READ"
     # "~CAP_AUDIT_WRITE"
-    "~CAP_SYS_ADMIN"
+    # "~CAP_SYS_ADMIN"
     # "~CAP_SYSLOG"
     # "~CAP_SYS_TIME
   ];
@@ -137,11 +137,11 @@
     "~@cpu-emulation"
     "~@debug"
     "~@module"
-    "~@mount"
+    # "~@mount"
     "~@obsolete"
     # "~@privileged"
     "~@raw-io"
-    "~@reboot"
+    # "~@reboot"
     # "~@resources"
     "~@swap"
   ];
