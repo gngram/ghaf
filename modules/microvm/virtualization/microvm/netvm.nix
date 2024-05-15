@@ -36,6 +36,7 @@
             withPolkit = true;
             withDebug = configHost.ghaf.profiles.debug.enable;
             withHardenedConfigs = true;
+            withRemoteJournalServer.enable = true;
           };
         };
 
@@ -63,6 +64,10 @@
             dhcp-authoritative = true;
             domain = "ghaf";
             listen-address = ["127.0.0.1,192.168.100.1"];
+            dhcp-option = [
+              "option:router,192.168.100.1"
+              "6,192.168.100.1"
+            ];
             expand-hosts = true;
             domain-needed = true;
             bogus-priv = true;
