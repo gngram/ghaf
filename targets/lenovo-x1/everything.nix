@@ -165,7 +165,7 @@
 
               # UI applications
               profiles = {
-                applications.enable = false;
+                applications.enable = true;
               };
 
               windows-launcher = {
