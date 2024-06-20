@@ -3,5 +3,6 @@
 {
   imports = [
     ./sshkeys.nix
+    ./fail2ban
   ];
 }
