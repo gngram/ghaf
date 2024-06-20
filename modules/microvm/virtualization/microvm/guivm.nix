@@ -45,6 +45,10 @@
             withDebug = configHost.ghaf.profiles.debug.enable;
             withHardenedConfigs = true;
           };
+          security = {
+            network.ipsecurity.enable = true;
+            network.bpf-access-level = lib.mkForce 1; # Provide BPF access to privileged users
+          };
         };
 
         systemd.services."waypipe-ssh-keygen" = let

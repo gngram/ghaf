@@ -32,6 +32,10 @@
             withPolkit = true;
             withDebug = configHost.ghaf.profiles.debug.enable;
           };
+          security = {
+            system-security.enable = true;
+            system-security.lock-kernel-modules = lib.mkDefault configHost.ghaf.profiles.release.enable;
+          };
         };
 
         system.stateVersion = lib.trivial.release;

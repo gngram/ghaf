@@ -38,6 +38,10 @@
             withDebug = configHost.ghaf.profiles.debug.enable;
           };
           services.audio.enable = true;
+          security = {
+            network.ipsecurity.enable = true;
+            network.bpf-access-level = lib.mkForce 1; # Provide BPF access to privileged users
+          };
         };
 
         environment = {
