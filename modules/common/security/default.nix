@@ -7,5 +7,6 @@
     ./audit
     ./pwquality.nix
     ./ssh-tarpit
+    ./clam-av.nix
   ];
 }
