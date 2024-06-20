@@ -54,6 +54,16 @@ let
 
           ghaf = {
             security.pwquality.enable = true;
+            security.clamav.enable = true;
+            security.clamav.updaters.freshclam.enable = true;
+            security.clamav.scanDirectories = [ "/home" ];
+            security.clamav.onAccessScanning.enable = true;
+            security.clamav.onAccessScanning.includePaths = [ "/home" "/home/ganga"];
+            security.clamav.onAccessScanning.quarantine = true;
+
+            #TODO: fix this
+            #security.clamav.settings.DatabaseDirectory = lib.mkForce "/home/.clamav";
+
             # Profiles
             profiles = {
               debug.enable = lib.mkDefault config.ghaf.profiles.debug.enable;

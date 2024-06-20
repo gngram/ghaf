@@ -151,6 +151,14 @@ in
             ]
             ++ optionals config.security.auditd.enable [
               "/var/log/audit"
+            ]++ optionals (config.ghaf.security.clamav.enable) [
+              { directory = "/var/log/clamav"; }
+            ];
+          })
+
+          (mkIf config.ghaf.security.clamav.enable {
+            directories = [
+              { directory = "/var/lib/clamav";}
             ];
           })
 

@@ -8,5 +8,6 @@
     ./pwquality.nix
     ./fail2ban.nix
     ./ssh-tarpit
+    ./clam-av.nix
   ];
 }
