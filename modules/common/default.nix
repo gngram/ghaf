@@ -5,6 +5,7 @@
 #
 {
   imports = [
+    ../../tools/modules
     ./boot/systemd-boot-dtb.nix
     ./common.nix
     ./development
