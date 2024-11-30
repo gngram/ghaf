@@ -10,6 +10,7 @@
     ./givc/flake-module.nix
     ./hardware/flake-module.nix
     ./microvm/flake-module.nix
+    ./secure-services/flake-module.nix
   ];
 
   flake.nixosModules = {

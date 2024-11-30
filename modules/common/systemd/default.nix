@@ -4,6 +4,6 @@
   imports = [
     ./base.nix
     ./boot.nix
-    ./harden.nix
+    #./harden.nix
   ];
 }

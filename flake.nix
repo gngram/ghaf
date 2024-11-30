@@ -163,6 +163,11 @@
         crane.follows = "givc/crane";
       };
     };
+
+    secure-services = {
+      url = "github:gangaram-tii/secure-services";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs =

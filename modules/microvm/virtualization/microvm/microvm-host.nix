@@ -13,6 +13,7 @@ in
 {
   imports = [
     inputs.impermanence.nixosModules.impermanence
+    inputs.self.nixosModules.secure-services
     inputs.self.nixosModules.givc-host
   ];
   options.ghaf.virtualization.microvm-host = {

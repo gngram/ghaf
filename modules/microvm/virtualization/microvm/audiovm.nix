@@ -22,6 +22,7 @@ let
     imports = [
       inputs.self.nixosModules.givc-audiovm
       inputs.impermanence.nixosModules.impermanence
+      inputs.self.nixosModules.secure-services
       (import ./common/vm-networking.nix {
         inherit
           config

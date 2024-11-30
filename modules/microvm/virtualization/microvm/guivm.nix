@@ -14,6 +14,7 @@ let
   guivmBaseConfiguration = {
     imports = [
       inputs.impermanence.nixosModules.impermanence
+      inputs.self.nixosModules.secure-services
       inputs.self.nixosModules.givc-guivm
       (import ./common/vm-networking.nix {
         inherit

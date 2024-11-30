@@ -530,6 +530,7 @@
         "nixos-generators": "nixos-generators",
         "nixos-hardware": "nixos-hardware",
         "nixpkgs": "nixpkgs_2",
+        "secure-services": "secure-services",
         "systems": "systems",
         "treefmt-nix": "treefmt-nix"
       }
@@ -556,6 +557,26 @@
       "original": {
         "owner": "oxalica",
         "repo": "rust-overlay",
+        "type": "github"
+      }
+    },
+    "secure-services": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1733000226,
+        "narHash": "sha256-j8jdFfVqOO9ewj7Hw5flh4VBMAkvZXzbEF4HXVVnhJg=",
+        "owner": "gangaram-tii",
+        "repo": "secure-services",
+        "rev": "d016972ea9d5122b4c2da874a7efd4c08484f152",
+        "type": "github"
+      },
+      "original": {
+        "owner": "gangaram-tii",
+        "repo": "secure-services",
         "type": "github"
       }
     },

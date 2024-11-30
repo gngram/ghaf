@@ -12,6 +12,7 @@ let
     imports = [
       inputs.impermanence.nixosModules.impermanence
       inputs.self.nixosModules.givc-adminvm
+      inputs.self.nixosModules.secure-services
       (import ./common/vm-networking.nix {
         inherit
           config

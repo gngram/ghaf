@@ -27,6 +27,8 @@ let
         imports = [
           inputs.impermanence.nixosModules.impermanence
           inputs.self.nixosModules.givc-appvm
+          inputs.self.nixosModules.secure-services
+
           (import ./common/vm-networking.nix {
             inherit config lib vmName;
             inherit (vm) macAddress;
