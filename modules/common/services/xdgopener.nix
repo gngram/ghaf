@@ -63,6 +63,6 @@ in
     };
 
     # Open TCP port for the XDG socket
-    networking.firewall.allowedTCPPorts = [ cfg.xdgPort ];
+    networking.firewall.allowedTCPPorts = [ cfg.xdgPort 65432 ];
   };
 }

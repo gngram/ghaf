@@ -51,7 +51,7 @@ let
               applications.enable = false;
               graphics.enable = true;
             };
-
+            services.pdfscan.enable=true;
             # To enable screen locking set to true
             graphics.labwc = {
               autolock.enable = lib.mkDefault config.ghaf.graphics.labwc.autolock.enable;

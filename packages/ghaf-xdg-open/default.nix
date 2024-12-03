@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 {
+  pkgs,
   writeShellApplication,
   dnsutils,
   openssh,
@@ -26,7 +27,6 @@ writeShellApplication {
     businessvmip=$(dig +short business-vm | head -1)
     commsvmip=$(dig +short comms-vm | head -1)
 
-
     if [[ "127.0.0.1" != "$REMOTE_ADDR" && \
       "$businessvmip" != "$REMOTE_ADDR" && \
       "$googlechromevmip" != "$REMOTE_ADDR" && \
@@ -35,25 +35,55 @@ writeShellApplication {
       exit 0
     fi
 
+    localpath="$sourcepath"
+    #
     if [[ "127.0.0.1" != "$REMOTE_ADDR" ]]; then
       echo "Copying $sourcepath from $REMOTE_ADDR to $zathurapath in zathura-vm"
       scp -i ${sshKeyPath} -o StrictHostKeyChecking=no "$REMOTE_ADDR":"$sourcepath" zathura-vm:"$zathurapath"
+      localpath="/tmp/pdfscan/$filename"
+      mkdir -p /tmp/pdfscan
+      scp -i ${sshKeyPath} -o StrictHostKeyChecking=no "$REMOTE_ADDR":"$sourcepath" "$localpath"
     else
       echo "Copying $sourcepath from GUIVM to $zathurapath in zathura-vm"
       scp -i ${sshKeyPath} -o StrictHostKeyChecking=no "$sourcepath" zathura-vm:"$zathurapath"
     fi
 
-    echo "Opening $zathurapath in zathura-vm"
-    if [[ "$type" == "pdf" ]]; then
-      ssh -i ${sshKeyPath} -o StrictHostKeyChecking=no zathura-vm run-waypipe zathura "'$zathurapath'"
-    elif [[ "$type" == "image" ]]; then
-      ssh -i ${sshKeyPath} -o StrictHostKeyChecking=no zathura-vm run-waypipe pqiv -i "'$zathurapath'"
-    else
-      echo "Unknown type: $type"
+    #TODO: pdf scanner service in ids-vm/zathura-vm(saves one scp)
+    RESULT=$(echo -n "$localpath" | ${pkgs.libressl.nc}/bin/nc localhost 65432)
+
+    if [[ "$localpath" != "$sourcepath" ]]; then
+      rm -f "$localpath"
     fi
+
+    echo "PDFScan result: $RESULT"
+
+    # Perform actions based on the result
+    case "$RESULT" in
+      "OK")
+        echo "Opening $zathurapath in zathura-vm"
+        if [[ "$type" == "pdf" ]]; then
+          ssh -i ${sshKeyPath} -o StrictHostKeyChecking=no zathura-vm run-waypipe zathura "'$zathurapath'"
+        elif [[ "$type" == "image" ]]; then
+          ssh -i ${sshKeyPath} -o StrictHostKeyChecking=no zathura-vm run-waypipe pqiv -i "'$zathurapath'"
+        else
+          echo "Unknown type: $type"
+        fi
+        ;;
+
+      "NOK")
+        ssh -i ${sshKeyPath} -o StrictHostKeyChecking=no zathura-vm 'run-waypipe ${pkgs.yad}/bin/yad --text="\n\ALERT:Found\ potential\ risk\ with\ this\ file." --image=${pkgs.oxygen-icons5}/share/icons/oxygen/base/128x128/status/dialog-warning.png  --on-top'
+        ;;
+
+      "INV")
+        ssh -i ${sshKeyPath} -o StrictHostKeyChecking=no zathura-vm 'run-waypipe ${pkgs.yad}/bin/yad --image=gtk-dialog-error --text="File\ not\ accessible!" --on-top'
+        ;;
+
+      *)
+        ssh -i ${sshKeyPath} -o StrictHostKeyChecking=no zathura-vm 'run-waypipe  ${pkgs.yad}/bin/yad --image=gtk-dialog-error --text="Unknown\ Error!" --on-top'
+        ;;
+    esac
 
     echo "Deleting $zathurapath in zathura-vm"
     ssh -i ${sshKeyPath} -o StrictHostKeyChecking=no zathura-vm rm -f "$zathurapath"
-
   '';
 }
