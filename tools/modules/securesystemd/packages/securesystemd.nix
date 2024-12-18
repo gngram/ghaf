@@ -1,16 +1,19 @@
 #{ pkgs,buildPythonPackage, fetchFromGitHub, python3Packages, ... }:
 { pkgs, ... }:
-pkgs.python3Packages.buildPythonPackage rec {
-  pname = "secure-systemd";
-  version = "0.0.1";
-
-  src = pkgs.fetchFromGitHub {
-    owner = "gangaram-tii";
-    repo = pname;
+let
+  repository = "secure-services";
+  package = pkgs.fetchFromGitHub {
+    owner = "gngram";
+    repo = repository;
     # No release was tagged and PyPI doesn't contain tests.
-    rev = "caf2de2f411f5eeaf67ee7e52cb531fb71a937aa";
-    hash = "sha256-u8exzAJgcazW7pVmsYiA5owUBe4KW6AJ4ISTHPNlA4I=";
+    rev = "27982511e23b5cc9438fd7a95741aafcc3a083b9";
+    hash = "sha256-b/c9JHvGW3aZTl3D6aqZGkpLyB4RxN8ai08+VAgiLjI=";
   };
+in
+pkgs.python3Packages.buildPythonPackage rec {
+  pname = repository;
+  version = "0.0.1";
+  src = package + "/packages/service-seal";
 
   propagatedBuildInputs = [
     pkgs.python3Packages.sh
