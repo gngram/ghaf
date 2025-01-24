@@ -6,8 +6,8 @@ let
     owner = "gngram";
     repo = repository;
     # No release was tagged and PyPI doesn't contain tests.
-    rev = "27982511e23b5cc9438fd7a95741aafcc3a083b9";
-    hash = "sha256-b/c9JHvGW3aZTl3D6aqZGkpLyB4RxN8ai08+VAgiLjI=";
+    rev = "602cd07c4d28d3671bb1a31a7c1afbe13b34f0a4";
+    hash = "sha256-XDy+X0dFATsklAQ/3t+1342DU3WsUxzmDXc3TU++gAI=";
   };
 in
 pkgs.python3Packages.buildPythonPackage rec {
