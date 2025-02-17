@@ -9,6 +9,7 @@
 }:
 let
   vmName = "gui-vm";
+  configHost = config;
   inherit (import ../../../../lib/launcher.nix { inherit pkgs lib; }) rmDesktopEntries;
   guivmBaseConfiguration = {
     imports = [
@@ -22,12 +23,13 @@ let
           ;
       })
 
+
       ./common/storagevm.nix
 
       # To push logs to central location
       ../../../common/logging/client.nix
       (
-        { lib, pkgs, ... }:
+        { lib, pkgs, vmName, ... }:
         let
           # A list of applications from all AppVMs
           virtualApps = lib.lists.concatMap (
@@ -56,6 +58,12 @@ let
             ../../../common
             ../../../desktop
             ../../../reference/services
+            (import ../../../common/shared-memory {
+                config = config;
+                pkgs = pkgs;
+                lib = lib;
+                vmName = vmName;
+              })
           ];
 
           ghaf = {

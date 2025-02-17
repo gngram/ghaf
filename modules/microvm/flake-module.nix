@@ -16,7 +16,6 @@
       ./virtualization/microvm/modules.nix
       ./networking.nix
       ./power-control.nix
-      ../hardware/common/shared-mem.nix
     ];
   };
 }
