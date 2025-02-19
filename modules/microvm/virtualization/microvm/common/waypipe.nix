@@ -15,18 +15,18 @@
 }:
 let
   cfg = config.ghaf.waypipe;
-  cfgShm = configHost.ghaf.shm.service;
+  cfgShm = configHost.ghaf.shm;
   waypipePort = configHost.ghaf.virtualization.microvm.appvm.waypipeBasePort + vmIndex;
   waypipeBorder = lib.optionalString (
     cfg.waypipeBorder && vm.borderColor != null
   ) "--border \"${vm.borderColor}\"";
   displayOptServer =
-    if cfgShm.gui.enabled then
-      "-s " + cfgShm.gui.serverSocketPath "gui" "-${vm.name}-vm"
+    if cfgShm.servers.gui-vm.enable then
+      "-s " + cfgShm.gui-vm.serverSocketPath "${vm.name}-vm"
     else
       "--vsock -s ${toString waypipePort}";
   displayOptClient =
-    if cfgShm.gui.enabled && (lib.lists.elem "${vm.name}-vm" cfgShm.gui.clients) then
+    if cfgShm.servers.gui-vm.enabled && (lib.lists.elem "${vm.name}-vm" cfgShm.gui.clients) then
       "-s " + cfgShm.gui.clientSocketPath
     else
       "--vsock -s ${toString waypipePort}";

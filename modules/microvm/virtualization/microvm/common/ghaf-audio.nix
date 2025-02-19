@@ -13,10 +13,9 @@ let
   cfg = config.ghaf.ghaf-audio;
   audiovmHost = "audio-vm";
   audiovmPort = config.ghaf.services.audio.pulseaudioTcpPort;
-  clientSocketPath = "/run/memsocket-audio-vm/audio-vm-client.sock"
   address =
-    if configHost.ghaf.shm.service.audio.enabled then
-      "unix:${clientSocketPath}"
+    if config.ghaf.shm.servers.audio-vm.enable then
+      "unix:${config.ghaf.shm.servers.audio-vm.clientSocket}"
     else
       "tcp:${audiovmHost}:${toString audiovmPort}";
   reconnectMs = 1000;

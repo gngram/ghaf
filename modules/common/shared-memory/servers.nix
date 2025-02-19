@@ -15,15 +15,15 @@ let
     types
   ;
   cfg = config.ghaf.shm.server;
-  vectors = toString (2 * config.ghaf.shm.config.numSlots);
-  memsocket = pkgs.callPackage ../../../packages/memsocket { shmSlots = config.ghaf.shm.config.numSlots; };
+  vectors = toString (2 * config.ghaf.shm.numSlots);
+  memsocket = pkgs.callPackage ../../../packages/memsocket { shmSlots = config.ghaf.shm.numSlots; };
 
   createService = client: lib.attrsets.recursiveUpdate {
     enable = true;
     description = "memsocket";
     serviceConfig = {
       Type = "simple";
-      ExecStart = "${memsocket}/bin/memsocket -s /tmp/${vmName}-${client.name}.sock -l ${client.slot}";
+      ExecStart = "${memsocket}/bin/memsocket -s ${config.ghaf.shm.serverSocket vmName client.name} -l ${client.slot}";
       Restart = "always";
       RestartSec = "1";
       RuntimeDirectory = "memsocket-${vmName}";

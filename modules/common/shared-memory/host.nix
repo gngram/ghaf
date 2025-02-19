@@ -17,13 +17,13 @@ let
 
   user = "microvm";
   group = "kvm";
-  memsocket = pkgs.callPackage ../../../packages/memsocket { shmSlots = config.ghaf.shm.config.numSlots; };
-  vectors = toString (2 * config.ghaf.shm.config.numSlots);
+  memsocket = pkgs.callPackage ../../../packages/memsocket { shmSlots = config.ghaf.shm.numSlots; };
+  vectors = toString (2 * config.ghaf.shm.numSlots);
 
   shmService = pkgs.writeShellScriptBin "shmService" ''
-      if [ -S ${config.ghaf.shm.config.hostSocket} ]; then
-        echo Erasing ${config.ghaf.shm.config.hostSocket}
-        rm -f ${config.ghaf.shm.config.hostSocket}
+      if [ -S ${config.ghaf.shm.hostSocket} ]; then
+        echo Erasing ${config.ghaf.shm.hostSocket}
+        rm -f ${config.ghaf.shm.hostSocket}
       fi
       ${pkgs.qemu_kvm}/bin/ivshmem-server -p /tmp/ivshmem-server.pid -n ${vectors} -m /dev/hugepages/ -l ${(toString cfg.memSize) + "M"}i
     '';

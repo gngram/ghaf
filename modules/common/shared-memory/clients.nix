@@ -14,50 +14,44 @@ let
     types
   ;
   cfg = config.ghaf.shm.client;
-  memsocket = pkgs.callPackage ../../../packages/memsocket { shmSlots = config.ghaf.shm.config.numSlots; };
+  memsocket = pkgs.callPackage ../../../packages/memsocket { shmSlots = config.ghaf.shm.numSlots; };
 
-  createService = shmServer: lib.attrsets.recursiveUpdate {
+  createService = server: lib.attrsets.recursiveUpdate {
     enable = true;
     description = "memsocket";
     serviceConfig = {
       Type = "simple";
-      ExecStart = "${memsocket}/bin/memsocket -s /tmp/${shmServer.name}-client.sock -l ${shmServer.slot}";
+      ExecStart = "${memsocket}/bin/memsocket -s ${config.ghaf.shm.clientSocket server.name} -l ${server.slot}";
       Restart = "always";
       RestartSec = "1";
-      RuntimeDirectory = "memsocket-${shmServer.name}";
+      RuntimeDirectory = "memsocket-${server.name}";
       RuntimeDirectoryMode = "0750";
     };
   } cfg.serviceParams;
 
-  /*
-  servers = builtins.concatLists (
-    builtins.mapAttrsToList (serverName: serverConfig:
-      builtins.filter (client: client.name == ${vmName}) serverConfig.clients
-        builtins.map (client: { inherit serverName; slot = client.slot; })
-    ) config.ghaf.shm.config.servers
-  );
-  */
+  getServers = clientName:
+    builtins.concatMap (serverName:
+      let
+        server = servers.${serverName};  # Get the server config
+      in
+        if server.enable then
+          # Filter clients belonging to the given server
+          map (c: { name = serverName; slot = c.slot; })
+              (builtins.filter (c: c.name == clientName) server.clients)
+        else
+          []  # Skip disabled servers
+    ) (builtins.attrNames config.ghaf.shm.servers)
+
+
+
+  servers = getServers vmName;
+
 
   systemdServiceConfig =  serverList: builtins.listToAttrs (map (server: {
     name = "memsocket-${server.name}";
     value = createService server;
   }) serverList);
 
-  vmSlotType = types.submodule {
-    options = {
-      name = mkOption {
-        type = types.str;
-        description = "The name of the VM.";
-        example = "business-vm";
-      };
-
-      slot = mkOption {
-        type = types.int;
-        description = "The slot number assigned to the VM.";
-        example = 0;
-      };
-    };
-  };
 
 in
 {
@@ -66,12 +60,6 @@ in
       type = types.bool;
       default = false;
       description = "Enable shm client.";
-    };
-
-    servers = mkOption {
-      type = types.listOf vmSlotType;
-      default = [];
-      description = "List of clients and their slots.";
     };
 
     userService = mkOption {
