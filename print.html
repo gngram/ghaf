@@ -4962,7 +4962,7 @@ boolean</p>
 <ul>
 <li><a href="https://github.com/tiiuae/ghaf/blob/main/modules/desktop/graphics/demo-apps.nix">https://github.com/tiiuae/ghaf/blob/main/modules/desktop/graphics/demo-apps.nix</a></li>
 </ul>
-<h2 id="ghafgraphicsdemo-appsgala-app"><a class="header" href="#ghafgraphicsdemo-appsgala-app">ghaf.graphics.demo-apps.gala-app</a></h2>
+<h2 id="ghafgraphicsdemo-appsgala"><a class="header" href="#ghafgraphicsdemo-appsgala">ghaf.graphics.demo-apps.gala</a></h2>
 <p>Include package Gala App to menu and system environment</p>
 <p><em>Type:</em>
 boolean</p>
@@ -6539,7 +6539,7 @@ one of “none”, “zstd”</p>
 <code>"zstd"</code></p>
 <p><em>Declared by:</em></p>
 <ul>
-<li><a href="https://github.com/tiiuae/ghaf/blob/main/modules/disko/disko-ab-partitions.nix">https://github.com/tiiuae/ghaf/blob/main/modules/disko/disko-ab-partitions.nix</a></li>
+<li><a href="https://github.com/tiiuae/ghaf/blob/main/modules/disko/disko-debug-partition.nix">https://github.com/tiiuae/ghaf/blob/main/modules/disko/disko-debug-partition.nix</a></li>
 </ul>
 <h2 id="ghafkernelaudiovm"><a class="header" href="#ghafkernelaudiovm">ghaf.kernel.audiovm</a></h2>
 <p>AudioVM kernel configuration</p>
@@ -7233,6 +7233,56 @@ boolean</p>
 <ul>
 <li><a href="https://github.com/tiiuae/ghaf/blob/main/modules/reference/services/dendrite-pinecone/dendrite-pinecone.nix">https://github.com/tiiuae/ghaf/blob/main/modules/reference/services/dendrite-pinecone/dendrite-pinecone.nix</a></li>
 </ul>
+<h2 id="ghafreferenceservicesdendrite-pineconemcastudpip"><a class="header" href="#ghafreferenceservicesdendrite-pineconemcastudpip">ghaf.reference.services.dendrite-pinecone.McastUdpIp</a></h2>
+<p>Multicast UDP IP for dendrite pinecone</p>
+<p><em>Type:</em>
+string</p>
+<p><em>Default:</em>
+<code>"239.0.0.114"</code></p>
+<p><em>Declared by:</em></p>
+<ul>
+<li><a href="https://github.com/tiiuae/ghaf/blob/main/modules/reference/services/dendrite-pinecone/dendrite-pinecone.nix">https://github.com/tiiuae/ghaf/blob/main/modules/reference/services/dendrite-pinecone/dendrite-pinecone.nix</a></li>
+</ul>
+<h2 id="ghafreferenceservicesdendrite-pineconemcastudpport"><a class="header" href="#ghafreferenceservicesdendrite-pineconemcastudpport">ghaf.reference.services.dendrite-pinecone.McastUdpPort</a></h2>
+<p>Multicast UDP port for dendrite pinecone</p>
+<p><em>Type:</em>
+string</p>
+<p><em>Default:</em>
+<code>"60606"</code></p>
+<p><em>Declared by:</em></p>
+<ul>
+<li><a href="https://github.com/tiiuae/ghaf/blob/main/modules/reference/services/dendrite-pinecone/dendrite-pinecone.nix">https://github.com/tiiuae/ghaf/blob/main/modules/reference/services/dendrite-pinecone/dendrite-pinecone.nix</a></li>
+</ul>
+<h2 id="ghafreferenceservicesdendrite-pineconemcastudpportint"><a class="header" href="#ghafreferenceservicesdendrite-pineconemcastudpportint">ghaf.reference.services.dendrite-pinecone.McastUdpPortInt</a></h2>
+<p>Multicast UDP port for dendrite pinecone</p>
+<p><em>Type:</em>
+signed integer</p>
+<p><em>Default:</em>
+<code>60606</code></p>
+<p><em>Declared by:</em></p>
+<ul>
+<li><a href="https://github.com/tiiuae/ghaf/blob/main/modules/reference/services/dendrite-pinecone/dendrite-pinecone.nix">https://github.com/tiiuae/ghaf/blob/main/modules/reference/services/dendrite-pinecone/dendrite-pinecone.nix</a></li>
+</ul>
+<h2 id="ghafreferenceservicesdendrite-pineconetcpport"><a class="header" href="#ghafreferenceservicesdendrite-pineconetcpport">ghaf.reference.services.dendrite-pinecone.TcpPort</a></h2>
+<p>TCP port for dendrite pinecone</p>
+<p><em>Type:</em>
+string</p>
+<p><em>Default:</em>
+<code>"49000"</code></p>
+<p><em>Declared by:</em></p>
+<ul>
+<li><a href="https://github.com/tiiuae/ghaf/blob/main/modules/reference/services/dendrite-pinecone/dendrite-pinecone.nix">https://github.com/tiiuae/ghaf/blob/main/modules/reference/services/dendrite-pinecone/dendrite-pinecone.nix</a></li>
+</ul>
+<h2 id="ghafreferenceservicesdendrite-pineconetcpportint"><a class="header" href="#ghafreferenceservicesdendrite-pineconetcpportint">ghaf.reference.services.dendrite-pinecone.TcpPortInt</a></h2>
+<p>TCP port for dendrite pinecone</p>
+<p><em>Type:</em>
+signed integer</p>
+<p><em>Default:</em>
+<code>49000</code></p>
+<p><em>Declared by:</em></p>
+<ul>
+<li><a href="https://github.com/tiiuae/ghaf/blob/main/modules/reference/services/dendrite-pinecone/dendrite-pinecone.nix">https://github.com/tiiuae/ghaf/blob/main/modules/reference/services/dendrite-pinecone/dendrite-pinecone.nix</a></li>
+</ul>
 <h2 id="ghafreferenceservicesdendrite-pineconeexternalnic"><a class="header" href="#ghafreferenceservicesdendrite-pineconeexternalnic">ghaf.reference.services.dendrite-pinecone.externalNic</a></h2>
 <p>External network interface</p>
 <p><em>Type:</em>
@@ -7504,6 +7554,42 @@ boolean</p>
 <p><em>Declared by:</em></p>
 <ul>
 <li><a href="https://github.com/tiiuae/ghaf/blob/main/modules/common/services/fprint.nix">https://github.com/tiiuae/ghaf/blob/main/modules/common/services/fprint.nix</a></li>
+</ul>
+<h2 id="ghafservicesgithubenable"><a class="header" href="#ghafservicesgithubenable">ghaf.services.github.enable</a></h2>
+<p>Whether to enable Github configurations.</p>
+<p><em>Type:</em>
+boolean</p>
+<p><em>Default:</em>
+<code>false</code></p>
+<p><em>Example:</em>
+<code>true</code></p>
+<p><em>Declared by:</em></p>
+<ul>
+<li><a href="https://github.com/tiiuae/ghaf/blob/main/modules/common/services/github.nix">https://github.com/tiiuae/ghaf/blob/main/modules/common/services/github.nix</a></li>
+</ul>
+<h2 id="ghafservicesgithubowner"><a class="header" href="#ghafservicesgithubowner">ghaf.services.github.owner</a></h2>
+<p>Github owner account of the bug reporter issue</p>
+<p><em>Type:</em>
+string</p>
+<p><em>Declared by:</em></p>
+<ul>
+<li><a href="https://github.com/tiiuae/ghaf/blob/main/modules/common/services/github.nix">https://github.com/tiiuae/ghaf/blob/main/modules/common/services/github.nix</a></li>
+</ul>
+<h2 id="ghafservicesgithubrepo"><a class="header" href="#ghafservicesgithubrepo">ghaf.services.github.repo</a></h2>
+<p>Github repo of the bug reporter issue</p>
+<p><em>Type:</em>
+string</p>
+<p><em>Declared by:</em></p>
+<ul>
+<li><a href="https://github.com/tiiuae/ghaf/blob/main/modules/common/services/github.nix">https://github.com/tiiuae/ghaf/blob/main/modules/common/services/github.nix</a></li>
+</ul>
+<h2 id="ghafservicesgithubtoken"><a class="header" href="#ghafservicesgithubtoken">ghaf.services.github.token</a></h2>
+<p>Personal token of the bug reporter Github account</p>
+<p><em>Type:</em>
+string</p>
+<p><em>Declared by:</em></p>
+<ul>
+<li><a href="https://github.com/tiiuae/ghaf/blob/main/modules/common/services/github.nix">https://github.com/tiiuae/ghaf/blob/main/modules/common/services/github.nix</a></li>
 </ul>
 <h2 id="ghafserviceswifienable"><a class="header" href="#ghafserviceswifienable">ghaf.services.wifi.enable</a></h2>
 <p>Whether to enable Wifi configuration for the net-vm.</p>
@@ -8760,6 +8846,29 @@ boolean</p>
 <code>false</code></p>
 <p><em>Example:</em>
 <code>true</code></p>
+<p><em>Declared by:</em></p>
+<ul>
+<li><a href="https://github.com/tiiuae/ghaf/blob/main/modules/microvm/virtualization/microvm/idsvm/mitmproxy">https://github.com/tiiuae/ghaf/blob/main/modules/microvm/virtualization/microvm/idsvm/mitmproxy</a></li>
+</ul>
+<h2 id="ghafvirtualizationmicrovmidsvmmitmproxywebuienabled"><a class="header" href="#ghafvirtualizationmicrovmidsvmmitmproxywebuienabled">ghaf.virtualization.microvm.idsvm.mitmproxy.webUIEnabled</a></h2>
+<p>Whether to enable mitmproxyWebUI on ids-vm</p>
+<p><em>Type:</em>
+boolean</p>
+<p><em>Default:</em>
+<code>false</code></p>
+<p><em>Declared by:</em></p>
+<ul>
+<li><a href="https://github.com/tiiuae/ghaf/blob/main/modules/microvm/virtualization/microvm/idsvm/mitmproxy">https://github.com/tiiuae/ghaf/blob/main/modules/microvm/virtualization/microvm/idsvm/mitmproxy</a></li>
+</ul>
+<h2 id="ghafvirtualizationmicrovmidsvmmitmproxywebuiport"><a class="header" href="#ghafvirtualizationmicrovmidsvmmitmproxywebuiport">ghaf.virtualization.microvm.idsvm.mitmproxy.webUIPort</a></h2>
+<p>MitmwebUI port</p>
+<p><em>Type:</em>
+list of 16 bit unsigned integer; between 0 and 65535 (both inclusive) <em>(read only)</em></p>
+<p><em>Default:</em></p>
+<pre><code>[
+  8081
+]
+</code></pre>
 <p><em>Declared by:</em></p>
 <ul>
 <li><a href="https://github.com/tiiuae/ghaf/blob/main/modules/microvm/virtualization/microvm/idsvm/mitmproxy">https://github.com/tiiuae/ghaf/blob/main/modules/microvm/virtualization/microvm/idsvm/mitmproxy</a></li>
