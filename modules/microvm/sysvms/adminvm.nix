@@ -44,6 +44,7 @@ let
               withHardenedConfigs = true;
             };
             givc.adminvm.enable = true;
+            services.opa.enable = true;
 
             # Storage
             storagevm = {
@@ -68,6 +69,14 @@ let
               };
             };
           };
+
+          networking = {
+            firewall = {
+              allowedTCPPorts = [ 5050 ];
+              allowedUDPPorts = [ 5050 ];
+            };
+          };
+
 
           system.stateVersion = lib.trivial.release;
 

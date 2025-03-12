@@ -2,8 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 {
   imports = [
-    ./sshkeys.nix
-    ./apparmor
-    ./policy-management/opa.nix
+    ./opa.nix
+    ./opa-tls.nix
   ];
 }
