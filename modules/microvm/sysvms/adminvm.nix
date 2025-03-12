@@ -50,6 +50,7 @@ let
               withHardenedConfigs = true;
             };
             givc.adminvm.enable = true;
+            services.opa.enable = true;
 
             # Storage
             storagevm = {
