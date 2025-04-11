@@ -253,22 +253,37 @@
 <p>Builder Controller arranges builds on Remote Builders to make disk images and other release artifacts.</p>
 </li>
 <li>
-<p>After the building is done, Remote Builder sends disk images to Builder Controller to create provenance files and sign disk images and provenance files.</p>
+<p>After the building is done, Remote Builder sends disk images and other release artifacts to Builder Controller.</p>
 </li>
 <li>
 <p>On build failure, Builder Controller sends failure notifications to Message Service.</p>
 </li>
 <li>
+<p>Builder controller creates provenance files and signs disk images and provenance files with the Signing Service.</p>
+</li>
+<li>
 <p>Builder Controller uploads all build artifacts to Binary Cache.</p>
 </li>
 <li>
-<p>Test Automation fetches disk images from the Controller and runs the hardware test on them.</p>
+<p>Builder Controller uploads disk images to Artifact Storage.</p>
 </li>
 <li>
-<p>Test Automation sends test reports to the Controller.</p>
+<p>Builder controller triggers automated hardware tests on Test Automation Agent.</p>
 </li>
 <li>
-<p>Users can download images and test reports from the Controller</p>
+<p>Test Automation Agent fetches disk images from the Artifact Storage and runs the hardware test on them.</p>
+</li>
+<li>
+<p>Test Automation Agent sends test reports to the Builder Controller.</p>
+</li>
+<li>
+<p>Builder Controller uploads test reports to Artifact Storage.</p>
+</li>
+<li>
+<p>Users can download disk images, disk image signatures, provenance files, provenance file signatures and test reports from the Controller.</p>
+</li>
+<li>
+<p>Users can verify disk image signatures and provenance file signatures with Signing Service.</p>
 </li>
 </ol>
 
