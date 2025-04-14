@@ -604,6 +604,18 @@ boolean</p>
 <ul>
 <li><a href="https://github.com/tiiuae/ghaf/blob/main/modules/desktop/graphics/boot.nix">https://github.com/tiiuae/ghaf/blob/main/modules/desktop/graphics/boot.nix</a></li>
 </ul>
+<h2 id="ghafgraphicscosmicenable"><a class="header" href="#ghafgraphicscosmicenable">ghaf.graphics.cosmic.enable</a></h2>
+<p>Whether to enable cosmic.</p>
+<p><em>Type:</em>
+boolean</p>
+<p><em>Default:</em>
+<code>false</code></p>
+<p><em>Example:</em>
+<code>true</code></p>
+<p><em>Declared by:</em></p>
+<ul>
+<li><a href="https://github.com/tiiuae/ghaf/blob/main/modules/desktop/graphics/cosmic">https://github.com/tiiuae/ghaf/blob/main/modules/desktop/graphics/cosmic</a></li>
+</ul>
 <h2 id="ghafgraphicsintel-setupenable"><a class="header" href="#ghafgraphicsintel-setupenable">ghaf.graphics.intel-setup.enable</a></h2>
 <p>Whether to enable Enable Intel GPU setup.</p>
 <p><em>Type:</em>
@@ -2519,9 +2531,9 @@ boolean</p>
 </ul>
 <h2 id="ghafprofilesgraphicscompositor"><a class="header" href="#ghafprofilesgraphicscompositor">ghaf.profiles.graphics.compositor</a></h2>
 <p>Which Wayland compositor to use.</p>
-<p>Choose one of: labwc</p>
+<p>Choose one of: labwc,cosmic</p>
 <p><em>Type:</em>
-value “labwc” (singular enum)</p>
+one of “labwc”, “cosmic”</p>
 <p><em>Default:</em>
 <code>"labwc"</code></p>
 <p><em>Declared by:</em></p>
