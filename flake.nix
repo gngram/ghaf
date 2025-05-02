@@ -133,7 +133,7 @@
     };
 
     givc = {
-      url = "github:tiiuae/ghaf-givc";
+      url = "github:gngram/ghaf-givc/pr__policy_agent";
       inputs = {
         nixpkgs.follows = "nixpkgs";
         flake-parts.follows = "flake-parts";
