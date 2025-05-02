@@ -23,6 +23,13 @@ in
       inherit (config.ghaf.givc.adminConfig) addresses;
       services = map (host: "givc-${host}.service") systemHosts;
       tls.enable = config.ghaf.givc.enableTls;
+      opa = {
+        enable = true;
+        policies = {
+          url = "https://github.com/gngram/ghaf-rego-policies/archive/refs/heads/main.tar.gz";
+          sha256 = "sha256-bfhbEHg5vBb8XfiBJi166dRpd/lqdfVET5nJdJBnHXc=";
+        };
+      };
     };
   };
 }
