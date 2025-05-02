@@ -7,6 +7,7 @@
   pyudev,
   psutil,
   inotify-simple,
+  lib,
 }:
 buildPythonApplication {
   pname = "vhotplug";
@@ -22,10 +23,10 @@ buildPythonApplication {
   doCheck = false;
 
   src = fetchFromGitHub {
-    owner = "tiiuae";
+    owner = "gngram";
     repo = "vhotplug";
-    rev = "6fa43f4e64ab130632a3f88eaf3d53108a0cc3b5";
-    hash = "sha256-B0VQ+sJhmU77UOf87SWu2rVrKJq8kweXYkBd0A21Ipo=";
+    rev = "209c96e4c34d881815f5be7b7cdd84a239cb6e43";
+    sha256 = "sha256-7ukQEiJQ61PtOKd3qIz+BvW0swwrNkSveXvNdeWDiv8=";
   };
 
   meta = {
