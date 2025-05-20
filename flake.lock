@@ -315,11 +315,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1747741525,
-        "narHash": "sha256-GaoTHcxut3A9eSpBh0CPWsk2tY6oXoYbwjSnSmoGxYs=",
+        "lastModified": 1748341229,
+        "narHash": "sha256-HiGVPJVDt4CrGSBSWBoIORaxUX+BvoZSLpi7tUI1V88=",
         "owner": "gngram",
         "repo": "ghaf-givc",
-        "rev": "cf8e4e3075fa9d0b19635079b8c38c103006f282",
+        "rev": "991344d8a7ebad24b8033f81fca7babc42542d45",
         "type": "github"
       },
       "original": {

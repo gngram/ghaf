@@ -3,7 +3,7 @@
 { config, lib, ... }:
 let
   cfg = config.ghaf.givc.adminvm;
-  inherit (lib) mkEnableOption mkIf;
+  inherit (lib) mkEnableOption mkIf mkDefault;
   inherit (config.ghaf.givc.adminConfig) name;
   systemHosts = lib.lists.subtractLists (config.ghaf.common.appHosts ++ [ name ]) (
     builtins.attrNames config.ghaf.networking.hosts
@@ -24,11 +24,8 @@ in
       services = map (host: "givc-${host}.service") systemHosts;
       tls.enable = config.ghaf.givc.enableTls;
       opa = {
-        enable = true;
-        policies = {
-          url = "https://github.com/gngram/ghaf-rego-policies/archive/refs/heads/main.tar.gz";
-          sha256 = "sha256-bfhbEHg5vBb8XfiBJi166dRpd/lqdfVET5nJdJBnHXc=";
-        };
+        enable = mkDefault true;
+        policyPath = mkDefault ./../../policies/default-policy;
       };
     };
   };

@@ -54,12 +54,24 @@ let
     ]))
     (laptop-configuration "lenovo-x1-carbon-gen11" "debug" (withCommonModules [
       self.nixosModules.hardware-lenovo-x1-carbon-gen11
-      {
-        ghaf = {
-          reference.profiles.mvp-user-trial.enable = true;
-          partitioning.disko.enable = true;
-        };
-      }
+      (
+        { pkgs, ... }:
+        {
+          ghaf = {
+            reference.profiles.mvp-user-trial.enable = true;
+            partitioning.disko.enable = true;
+            # Policy
+            hardware.usb.vhotplug = {
+              ruleEngine.enable = false;
+              policyEngine.enable = true;
+              # Static policy
+              policyEngine.policyFile = ./../../policies/default-policy/usb_hotplug_rules.json;
+              # Enable policy update through OPA
+              policyEngine.opa = true;
+            };
+          };
+        }
+      )
     ]))
     (laptop-configuration "lenovo-x1-carbon-gen12" "debug" (withCommonModules [
       self.nixosModules.hardware-lenovo-x1-carbon-gen12
