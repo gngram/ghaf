@@ -26,8 +26,9 @@ in
       opa = {
         enable = true;
         policies = {
-          url = "https://github.com/gngram/ghaf-rego-policies/archive/refs/heads/main.tar.gz";
-          sha256 = "sha256-bfhbEHg5vBb8XfiBJi166dRpd/lqdfVET5nJdJBnHXc=";
+          url = "https://github.com/tiiuae/ghaf-policies/archive/refs/heads/main.tar.gz";
+          sha256 = "sha256-oXqy8EuyZCi3NFLTdYkuM+32z98iM7H/f1NG3iMeheU=";
+          dir = "policies";
         };
       };
     };

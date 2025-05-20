@@ -54,12 +54,30 @@ let
     ]))
     (laptop-configuration "lenovo-x1-carbon-gen11" "debug" (withCommonModules [
       self.nixosModules.hardware-lenovo-x1-carbon-gen11
-      {
-        ghaf = {
+      ({ pkgs, ... }: {
+        ghaf =
+        let
+          ghaf-policies = pkgs.fetchFromGitHub {
+            owner = "tiiuae";
+            repo = "ghaf-policies";
+            rev = "9cfc9ce101595d569f0a123f6a88798895dd6754";
+            sha256 = "sha256-qSQsBUSisW3dM2uDdNCRHlbe/ostyDDlExm2tKnVEH0=";
+          };
+        in
+        {
           reference.profiles.mvp-user-trial.enable = true;
           partitioning.disko.enable = true;
+          /* Policy */
+          hardware.usb.vhotplug = {
+            ruleEngine.enable = false;
+            policyEngine.enable = true;
+            # Static policy
+            policyEngine.policyFile = "${ghaf-policies}/policies/lenovo-x1/usb_hotplug_rules.json";
+            # Enable policy update through OPA
+            policyEngine.opa = true;
+          };
         };
-      }
+      })
     ]))
     (laptop-configuration "lenovo-x1-carbon-gen12" "debug" (withCommonModules [
       self.nixosModules.hardware-lenovo-x1-carbon-gen12
