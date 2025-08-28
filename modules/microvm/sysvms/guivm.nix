@@ -198,6 +198,7 @@ let
                 pkgs.pamixer
                 pkgs.eww
                 pkgs.wlr-randr
+                pkgs.usb-passthrough-manager
               ]
               ++ [ pkgs.ctrl-panel ]
               # Packages for checking hardware acceleration
