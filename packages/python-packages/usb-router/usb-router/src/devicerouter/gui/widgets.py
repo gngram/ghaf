@@ -42,7 +42,7 @@ def make_combo(device_id: str, targets: List[str], selected: Optional[str],
     return combo
 
 def make_device_block(device_id: str, info: Dict[str, Any],
-                      on_change, combo_width: Optional[int], popup_width: Optional[int]) -> QFrame:
+                      on_change, combo_width: Optional[int]) -> QFrame:
     container = QFrame()
     container.setFrameShape(QFrame.NoFrame)
     v = QVBoxLayout(container)
@@ -55,10 +55,9 @@ def make_device_block(device_id: str, info: Dict[str, Any],
     v.addWidget(lbl)
 
     combo = make_combo(device_id, info.get("targets", []), info.get("selected"),
-                       on_change=on_change, combo_width=combo_width, popup_width=popup_width)
+                       on_change=on_change, combo_width=combo_width)
     v.addWidget(combo)
 
     container._label = lbl
     container._combo = combo
     return container
-

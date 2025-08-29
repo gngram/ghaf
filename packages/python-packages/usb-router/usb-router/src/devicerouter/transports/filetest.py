@@ -88,4 +88,3 @@ class FileTestTransport(QObject):
             return
         self._last_mtime = m
         self._emit_snapshot_from_file()
-

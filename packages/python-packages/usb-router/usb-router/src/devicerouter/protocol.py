@@ -20,9 +20,6 @@ def jsonl_reader(sock: socket.socket) -> Generator[Dict[str, Any], None, None]:
                 yield json.loads(line.decode("utf-8"))
 
 # Message types (documentation)
-# - snapshot: {"type":"snapshot","devices":{...},"current-mount":{...}}
-# - selection: {"type":"selection","request_id":"...","device_id":"vid:pid","target_vm":"..."}
-# - connect_change: same as selection but for changes
-# - ack: {"type":"ack","request_id":"...","status":"ok"|"error","message":"", ...}
+# - device_connected: {"type":"device_connected","device":{...},"current-vm":{...}}
+# - selection: {"type":"selection","device_id":"vid:pid","target_vm":"..."}
 # - device_removed: {"type":"device_removed","device_id":"vid:pid"}
-
