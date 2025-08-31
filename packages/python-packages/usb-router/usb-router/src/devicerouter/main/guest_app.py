@@ -3,12 +3,12 @@ from pathlib import Path
 
 from PyQt5.QtWidgets import QApplication
 
-from devicerouter.gui.app_qt5 import App
+from devicerouter.guest.app_qt5 import App
 
 DEFAULT_LISTEN_PORT = 7000
 
 def build_parser():
-    p = argparse.ArgumentParser(description="GUI VM selector (PyQt5)")
+    p = argparse.ArgumentParser(description="Guest USB controller")
     p.add_argument("--hostport", type=int, default=DEFAULT_LISTEN_PORT, help="vsock listen port")
     p.add_argument("--jsonfile", type=str, default="/run/usb-router/devices.json", help="TEST MODE: use this JSON file as transport")
     return p

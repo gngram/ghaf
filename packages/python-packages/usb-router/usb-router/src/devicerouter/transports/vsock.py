@@ -1,6 +1,6 @@
 import socket, time, threading
 from typing import Callable, Dict, Any, Optional
-from devicerouter.protocol import jsonl_reader, jsonl_send
+from devicerouter.transports.protocol import jsonl_reader, jsonl_send
 
 AF_VSOCK = getattr(socket, "AF_VSOCK", None)
 SOCK_STREAM = socket.SOCK_STREAM
@@ -11,15 +11,15 @@ class VsockServer(threading.Thread):
     def __init__(self, on_message: Callable[[Dict[str, Any]], None],
                  on_connect: Callable[[], None],
                  on_disconnect: Callable[[], None],
-                 client_cid: int,
-                 client_port: int,
+                 server_cid: int,
+                 server_port: int,
                  with_ack = False):
         super().__init__(daemon=True)
         self.on_message = on_message
         self.on_connect = on_connect
         self.on_disconnect = on_disconnect
-        self.client_port = client_port
-        self.client_cid = client_cid
+        self.server_port = server_port
+        self.server_cid = server_cid
         self.sock: Optional[socket.socket] = None
         self.client: Optional[socket.socket] = None
         self.stop_flag = threading.Event()
@@ -28,7 +28,7 @@ class VsockServer(threading.Thread):
     def run(self):
         try:
             self.sock = socket.socket(AF_VSOCK, SOCK_STREAM)
-            self.sock.bind((self.client_cid, self.client_port))
+            self.sock.bind((self.server_cid, self.server_port))
             self.sock.listen(1)
             print ("Socket successfully created")
         except socket.error as err:
@@ -80,7 +80,7 @@ class VsockClient():
                     for ack in jsonl_reader(sock):
                         if ack.get("type") == "ack":
                             ack_received = True
-                            print(f"[DeviceRouter] ACK: {ack.get("status")}")
+                            print(f"[DeviceRouter] ACK: ", ack.get("status"))
                             break
                     if ack_received == False:
                         print(f"[DeviceRouter] Warning! No ack received!")

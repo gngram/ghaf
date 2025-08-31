@@ -1,11 +1,4 @@
 #!/usr/bin/env python3
-# Minimal GUI: read JSON file, show device blocks, send selection to host via vsock
-# UI:
-#   <b>Vendor (Product) [vid:pid]:</b>
-#   [ Select | vm-a | vm-b | ... ]
-#
-# On change: open AF_VSOCK to host (CID=VMADDR_CID_HOST, port=self.host_port), send one JSON line, close.
-# No registry, no vsock server, no file writes, no status bar. Bottom: [Refresh] [Close].
 
 import json
 import socket
@@ -20,16 +13,17 @@ from PyQt5.QtWidgets import (
 )
 
 # Reuse the small helpers from widgets.py
-from devicerouter.gui.widgets import device_title_html, SELECT_LABEL
+from devicerouter.guest.widgets import device_title_html, SELECT_LABEL
 from devicerouter.transports.vsock import VsockClient
 
 def _read_schema_once(path: Path) -> Dict[str, Any]:
     """Read+close immediately. Returns {} on error."""
     try:
-        with path.open("r") as f:
+        print("GGGGGGGGGGGGGGGGG", path)
+        with open(path, "r") as f:
             doc = json.load(f) or {}
     except Exception as e:
-        print(f"[GUI] Failed to read schema file: {e}", file=sys.stderr)
+        print(f"[devicerouter GUI] Failed to read schema file: {e}", file=sys.stderr)
         return {}
     # normalize basic shape
     if not isinstance(doc, dict):
@@ -48,12 +42,12 @@ def _send_selection_vsock(device_id: str, selected_vm: str, host_port: int) -> N
     }
     host = VsockClient(host_port, cid_host)
     host.send(payload)
-)
+
 class App(QWidget):
     def __init__(self, file_path: Path, host_port: int,
                  combo_width: Optional[int] = 100, popup_width: Optional[int] = None):
         super().__init__()
-        self.setWindowTitle("Device Router (GUI VM - Qt5)")
+        self.setWindowTitle("Device Router")
         self.resize(760, 560)
 
         self.file_path = file_path

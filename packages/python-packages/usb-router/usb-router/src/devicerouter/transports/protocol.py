@@ -19,7 +19,3 @@ def jsonl_reader(sock: socket.socket) -> Generator[Dict[str, Any], None, None]:
             if line:
                 yield json.loads(line.decode("utf-8"))
 
-# Message types (documentation)
-# - device_connected: {"type":"device_connected","device":{...},"current-vm":{...}}
-# - selection: {"type":"selection","device_id":"vid:pid","target_vm":"..."}
-# - device_removed: {"type":"device_removed","device_id":"vid:pid"}
