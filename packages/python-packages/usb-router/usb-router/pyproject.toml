@@ -20,8 +20,8 @@ gui = ["PyQt5>=5.15.0"]
 [project.scripts]
 devicerouter-gui-app = "devicerouter.main.guest_app:main"
 devicerouter-guest-service = "devicerouter.main.guest_service:main"
-devicerouter-host-service = "devicerouter.cli.host_service:main"
-devicerouter-host-testapp = "devicerouter.cli.host_testapp:main"
+devicerouter-host-service = "devicerouter.main.host_service:main"
+devicerouter-host-testapp = "devicerouter.main.host_testapp:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]

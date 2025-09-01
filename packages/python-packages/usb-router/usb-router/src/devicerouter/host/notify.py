@@ -6,12 +6,12 @@ from devicerouter.transports.vsock import VsockClient
 class NotifyClient:
     def __init__(self, client_cid: int, client_port: int):
         self.client = VsockClient(
-                 client_cid = client_cid,
-                 client_port = client_port)
+                 cid = client_cid,
+                 port = client_port)
 
     def send(self, msg: Dict[str, Any]):
         msgtype = msg.get("type")
-        if msgtype == "device_conected" or msgtype == "device_removed":
+        if msgtype == "device_connected" or msgtype == "device_removed":
             print(f"[HOST] {msgtype} {msg}")
             self.client.send(msg)
         else:

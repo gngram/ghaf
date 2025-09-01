@@ -9,18 +9,24 @@ def validate_schema(doc: Dict[str, Any]) -> bool:
         doc = {}
         
     stype = doc.get("type", "")
+    print(f"Input type {stype}")
     if stype == "device_connected":
         device = doc.get("device", {})
+        print(f"Iiiiiiiiiiiiiiiiiiiiiii {stype}")
         if not isinstance(device, dict):
+            print(f"Input not a dictionary {device}")
             return False
         else:
+            print(f"ppppppppppppppppppp")
             if ( "device_id" in device 
                  and "vendor" in device 
                  and "product" in device 
                  and "permitted_vms" in device
             ):
+                print(f"TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT")
                 return True
             else:
+                print(f"Required field not found in {device}")
                 return False
     if stype == "selection":
         if "device_id" in doc and "target_vm" in doc:

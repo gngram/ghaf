@@ -25,10 +25,22 @@ class RegistryService:
         self.connected = False
         self.regpath = Path(regDir)
         self.regpath.mkdir(parents=True, exist_ok=True)
+        try:
+            # Ensure directory is accessible by other users to read the registry file.
+            os.chmod(self.regpath, 0o755)
+        except OSError as e:
+            print(f"[devicerouter] Failed to set permissions on registry directory {self.regpath}: {e}")
 
         self.regFile = self.regpath / "usb-devices.json"
         if not self.regFile.exists():
             self.regFile.write_text("{}", encoding="utf-8")
+
+        # Set permissions to be readable by all users.
+        # This service runs as root, so we need to explicitly set permissions.
+        try:
+            os.chmod(self.regFile, 0o644)
+        except OSError as e:
+            print(f"[devicerouter] Failed to set permissions on registry file {self.regFile}: {e}")
 
         self._lock = threading.Lock()
 

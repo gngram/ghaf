@@ -11,9 +11,9 @@ def build_parser():
 
 def main():
     args = build_parser().parse_args()
-    if validate_schema(json.loads(args.jsons)):
+    if validate_schema(json.loads(args.message)):
         client = NotifyClient(args.guest_cid, args.guest_port)
-        client.send(json.loads(args.jsons))
+        client.send(json.loads(args.message))
     else:
         print ("Invalid schema!")
 
