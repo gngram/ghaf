@@ -1,3 +1,6 @@
+# Copyright 2022-2025 TII (SSRC) and the Ghaf contributors
+# SPDX-License-Identifier: Apache-2.0
+
 import socket
 import os
 import json
@@ -6,10 +9,12 @@ import threading
 from pathlib import Path
 from typing import Dict, Any
 
-from devicerouter.transports.vsock import VsockServer
+from usb_passthrough_manager.transports.vsock import VsockServer
+import logging
+logger = logging.getLogger("usb_passthrough_manager")
 
 class RegistryService:
-    def __init__(self, port: int, regDir: str = "/run/usb-router"):
+    def __init__(self, port: int, regDir: str):
         # Determine our own CID first
         with socket.socket(socket.AF_VSOCK, socket.SOCK_STREAM) as s:
             self.cid, _ = s.getsockname()
@@ -29,9 +34,9 @@ class RegistryService:
             # Ensure directory is accessible by other users to read the registry file.
             os.chmod(self.regpath, 0o755)
         except OSError as e:
-            print(f"[devicerouter] Failed to set permissions on registry directory {self.regpath}: {e}")
+            logger.error(f"Failed to set permissions on registry directory {self.regpath}: {e}")
 
-        self.regFile = self.regpath / "usb-devices.json"
+        self.regFile = self.regpath / "usb_db.json"
         if not self.regFile.exists():
             self.regFile.write_text("{}", encoding="utf-8")
 
@@ -40,7 +45,7 @@ class RegistryService:
         try:
             os.chmod(self.regFile, 0o644)
         except OSError as e:
-            print(f"[devicerouter] Failed to set permissions on registry file {self.regFile}: {e}")
+            logger.error(f"Failed to set permissions on registry file {self.regFile}: {e}")
 
         self._lock = threading.Lock()
 
@@ -55,20 +60,19 @@ class RegistryService:
 
     def on_connect(self):
         self.connected = True
-        print("[devicerouter] Connected to Host")
+        logger.info("Connected to Host")
 
     def on_disconnect(self):
         if self.connected:
-            print("[devicerouter] Host Disconnected;")
+            logger.info("Host Disconnected;")
         self.connected = False
 
-    # ===== Helpers for registry IO =====
     def _read_registry(self) -> Dict[str, Any]:
         try:
             text = self.regFile.read_text(encoding="utf-8")
             return json.loads(text or "{}")
         except Exception as e:
-            print(f"[devicerouter] Failed to read registry: {e}; resetting to empty")
+            logger.error(f"Failed to read registry: {e}; resetting to empty")
             return {}
 
     def _write_registry(self, data: Dict[str, Any]) -> None:
@@ -78,10 +82,11 @@ class RegistryService:
                 json.dump(data, tf, indent=2, ensure_ascii=False)
                 tmp_name = tf.name
             os.replace(tmp_name, self.regFile)  # atomic on POSIX
+            os.chmod(self.regFile, 0o644)
         except Exception as e:
-            print(f"[devicerouter] Failed to write registry: {e}")
+            logger.error(f"Failed to write registry: {e}")
 
-    
+
     def on_msg(self, msg: Dict[str, Any]):
         msgtype = msg.get("type")
 
@@ -89,14 +94,14 @@ class RegistryService:
             device = msg.get("device") or {}
             device_id = device.get("device_id")
             if not device_id:
-                print("[devicerouter] device_connected: missing device_id")
+                logger.error("Device_connected: missing device_id")
                 return
 
             entry = {
                 "vendor": device.get("vendor") or "",
                 "product": device.get("product") or "",
-                "permitted_vms": list(device.get("permitted_vms") or []),
-                "current-vm": msg.get("current-vm") or "",
+                "permitted-vms": list(device.get("permitted-vms") or []),
+                "current-vm": device.get("current-vm") or "",
             }
 
             with self._lock:
@@ -104,12 +109,12 @@ class RegistryService:
                 reg[device_id] = entry
                 self._write_registry(reg)
 
-            print(f"[devicerouter] device_connected: {device_id} -> {entry['current-vm']}")
+            logger.info(f"device_connected: {device_id} -> {entry['current-vm']}")
 
         elif msgtype == "device_removed":
             device_id = msg.get("device_id")
             if not device_id:
-                print("[devicerouter] device_removed: missing device_id")
+                logger.error("device_removed: missing device_id")
                 return
 
             with self._lock:
@@ -117,9 +122,9 @@ class RegistryService:
                 if device_id in reg:
                     del reg[device_id]
                     self._write_registry(reg)
-                    print(f"[devicerouter] device_removed: {device_id} removed")
+                    logger.info(f"device_removed: {device_id} removed")
                 else:
-                    print(f"[devicerouter] device_removed: {device_id} not found")
+                    logger.error(f"device_removed: {device_id} not found")
 
         else:
-            print(f"[devicerouter] unknown msg: {msg}")
+            logger.error(f"unknown schema: {msg}")

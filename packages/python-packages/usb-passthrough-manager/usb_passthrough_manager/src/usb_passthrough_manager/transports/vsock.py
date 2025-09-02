@@ -1,6 +1,12 @@
+# Copyright 2022-2025 TII (SSRC) and the Ghaf contributors
+# SPDX-License-Identifier: Apache-2.0
+
 import socket, time, threading
 from typing import Callable, Dict, Any, Optional
-from devicerouter.transports.protocol import jsonl_reader, jsonl_send
+from usb_passthrough_manager.transports.protocol import jsonl_reader, jsonl_send
+
+import logging
+logger = logging.getLogger("usb_passthrough_manager")
 
 AF_VSOCK = getattr(socket, "AF_VSOCK", None)
 SOCK_STREAM = socket.SOCK_STREAM
@@ -80,14 +86,14 @@ class VsockClient():
                     for ack in jsonl_reader(sock):
                         if ack.get("type") == "ack":
                             ack_received = True
-                            print(f"[DeviceRouter] ACK: ", ack.get("status"))
+                            print(f"[usb_passthrough_manager] ACK: ", ack.get("status"))
                             break
                     if ack_received == False:
-                        print(f"[DeviceRouter] Warning! No ack received!")
+                        print(f"[usb_passthrough_manager] Warning! No ack received!")
 
                 sock.close()
                 break
             except Exception:
-                print(f"[DeviceRouter] Vsock server error: {e}")
+                print(f"[usb_passthrough_manager] Vsock server error: {e}")
                 time.sleep(2.0)
                 continue

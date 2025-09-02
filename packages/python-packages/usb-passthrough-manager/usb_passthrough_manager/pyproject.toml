@@ -1,0 +1,30 @@
+# Copyright 2022-2025 TII (SSRC) and the Ghaf contributors
+# SPDX-License-Identifier: Apache-2.0
+
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "usb_passthrough_manager"
+version = "0.1.0"
+description = "Host ↔ guest VM with real user, usb passthrough management over vsock with a PyQt5 UI"
+authors = [{ name = "Ganga Ram" }]
+readme = "README.md"
+requires-python = ">=3.8"
+dependencies = [
+  # PyQt5 is only needed for the GUI. You can also install it manually.
+  "PyQt5>=5.15.0",
+]
+
+[project.optional-dependencies]
+usb_passthrough_manager = ["PyQt5>=5.15.0"]
+
+[project.scripts]
+usb_passthrough_manager = "apps.usb_passthrough_manager:main"
+usb_passthrough_service = "apps.usb_passthrough_service:main"
+usb_passthrough_host_test_service = "apps.usb_passthrough_host_test_service:main"
+usb_passthrough_host_test_app = "apps.usb_passthrough_host_test_app:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]

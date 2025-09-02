@@ -1,4 +1,5 @@
-#!/usr/bin/env python3
+# Copyright 2022-2025 TII (SSRC) and the Ghaf contributors
+# SPDX-License-Identifier: Apache-2.0
 
 import json
 import socket
@@ -6,34 +7,34 @@ import sys
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
+from usb_passthrough_manager.guest.widgets import device_title_html, SELECT_LABEL
+from usb_passthrough_manager.transports.vsock import VsockClient
+
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import (
     QApplication, QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton,
     QMessageBox, QScrollArea, QFrame, QComboBox
 )
 
-# Reuse the small helpers from widgets.py
-from devicerouter.guest.widgets import device_title_html, SELECT_LABEL
-from devicerouter.transports.vsock import VsockClient
+import logging
+logger = logging.getLogger("usb_passthrough_manager")
+
 
 def _read_schema_once(path: Path) -> Dict[str, Any]:
-    """Read+close immediately. Returns {} on error."""
     try:
-        print("GGGGGGGGGGGGGGGGG", path)
+        logger.debug(f"schema file: {path}", path)
         with open(path, "r") as f:
             doc = json.load(f) or {}
     except Exception as e:
-        print(f"[devicerouter GUI] Failed to read schema file: {e}", file=sys.stderr)
+        logger.error(f"Failed to read schema file: {e}", file=sys.stderr)
         return {}
-    # normalize basic shape
+
     if not isinstance(doc, dict):
         return {}
-    doc.setdefault("devices", {})
-    doc.setdefault("current-mount", {})
+
     return doc
 
 def _send_selection_vsock(device_id: str, selected_vm: str, host_port: int) -> None:
-    """Ephemeral vsock client: connect → send JSONL → close."""
     cid_host = getattr(socket, "VMADDR_CID_HOST", 2)
     payload = {
         "type": "selection",
@@ -54,13 +55,10 @@ class App(QWidget):
         self.host_port = host_port
         self.combo_width = combo_width
         self.popup_width = popup_width
-
-        # device_id -> {"container":QFrame, "label":QLabel, "combo":QComboBox}
         self.blocks: Dict[str, Dict[str, Any]] = {}
 
-        # ---- Layout ----
+        # Main layout
         root = QVBoxLayout(self)
-
         self.scroll = QScrollArea()
         self.scroll.setWidgetResizable(True)
         self.inner = QWidget()
@@ -85,7 +83,6 @@ class App(QWidget):
         # Initial load
         self.reload_from_file()
 
-    # ---------- UI building ----------
     def _clear_blocks(self):
         for info in self.blocks.values():
             w = info.get("container")
@@ -100,7 +97,6 @@ class App(QWidget):
         all_items = [SELECT_LABEL] + items
         combo.addItems(all_items)
 
-        # width controls
         if self.combo_width:
             combo.setFixedWidth(self.combo_width)
         else:
@@ -138,22 +134,34 @@ class App(QWidget):
         self.devices_layout.insertWidget(self.devices_layout.count() - 1, container)
         self.blocks[device_id] = {"container": container, "label": lbl, "combo": combo}
 
-    def reload_from_file(self):
+    def reload_from_file_old(self):
         doc = _read_schema_once(self.file_path)
         devices = doc.get("devices", {}) or {}
         mounts = doc.get("current-mount", {}) or {}
 
-        # Rebuild everything (simple & robust for shared file)
         self._clear_blocks()
 
         for dev_id, meta in devices.items():
-            permitted = list(meta.get("permitted_vms", []))
-            vendor = meta.get("Vendor") or ""
-            product = meta.get("Product") or ""
+
+            permitted = list(meta.get("permitted-vms", []))
+            vendor = meta.get("vendor") or ""
+            product = meta.get("product") or ""
             selected = mounts.get(dev_id)
+            print(dev_id, meta, selected)
             self._add_block(dev_id, vendor, product, permitted, selected)
 
-    # ---------- events ----------
+    def reload_from_file(self):
+        doc = _read_schema_once(self.file_path)
+        self._clear_blocks()
+
+        for dev_id, meta in doc.items():
+            print(dev_id, meta)
+            permitted = list(meta.get("permitted-vms", []))
+            vendor = meta.get("vendor") or ""
+            product = meta.get("product") or ""
+            selected = meta.get("current-vm") or ""
+            self._add_block(dev_id, vendor, product, permitted, selected)
+
     def on_combo_changed(self, device_id: str):
         info = self.blocks.get(device_id)
         if not info:
@@ -161,7 +169,6 @@ class App(QWidget):
         combo: QComboBox = info["combo"]
         choice = combo.currentText()
         if choice == SELECT_LABEL:
-            # do nothing on neutral selection
             return
         try:
             _send_selection_vsock(device_id, choice, self.host_port)

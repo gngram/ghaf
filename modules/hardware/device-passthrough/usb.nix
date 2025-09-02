@@ -1,10 +1,11 @@
 # Copyright 2025 TII (SSRC) and the Ghaf contributors
 # SPDX-License-Identifier: Apache-2.0
 
-{ config, lib, ... }:
+{ config, lib, pkgs, ... }:
 let
   inherit (lib)
     mkOption
+    mkEnableOption
     types
     mkIf
     mkMerge
@@ -142,6 +143,10 @@ let
 in
 {
   options.ghaf.hardware.passthrough.usb = {
+    manager = {
+      enable = mkEnableOption "USB passthrough manager.";
+    };
+
     devices = mkOption {
       description = ''
         List of USB device(s) to passthrough.
@@ -192,6 +197,27 @@ in
     )
     {
       ghaf.hardware.passthrough.vmUdevExtraRules = vmUdevExtraRulesUSB;
+      environment.systemPackages = [
+        pkgs.usb-passthrough-manager
+      ];
     }
+    /*
+    (mkIf config.ghaf.hardware.passthrough.usb.manager.enable {
+
+      systemd.services.vhotplug = {
+        enable = true;
+        description = "usb_passthrough_manager";
+        wantedBy = [ "multi-user.target" ];
+        after = [ "local-fs.target" ];
+        serviceConfig = {
+          Type = "simple";
+          Restart = "always";
+          RestartSec = "1";
+          ExecStart = "${pkgs.usb_passthrough_manager_service}/bin/usb_passthrough_manager_service";
+        };
+        startLimitIntervalSec = 0;
+      };
+    })
+    */
   ];
 }

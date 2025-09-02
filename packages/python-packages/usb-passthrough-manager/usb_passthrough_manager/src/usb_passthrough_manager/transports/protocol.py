@@ -1,3 +1,6 @@
+# Copyright 2022-2025 TII (SSRC) and the Ghaf contributors
+# SPDX-License-Identifier: Apache-2.0
+
 import json
 import socket
 from typing import Dict, Any, Generator
@@ -18,4 +21,3 @@ def jsonl_reader(sock: socket.socket) -> Generator[Dict[str, Any], None, None]:
             line = line.strip()
             if line:
                 yield json.loads(line.decode("utf-8"))
-

@@ -1,6 +1,6 @@
-
 # Copyright 2022-2025 TII (SSRC) and the Ghaf contributors
 # SPDX-License-Identifier: Apache-2.0
+
 {
   buildPythonApplication,
   wheel,
@@ -10,10 +10,10 @@
   libsForQt5,
 }:
 buildPythonApplication {
-  pname = "usbrouter";
+  pname = "usb_passthrough_manager";
   version = "0.1.0";
-  src = ./usb-router;
-  pyproject = true;                     # use pyproject/PEP 517 build
+  src = ./usb_passthrough_manager;
+  pyproject = true;
 
   nativeBuildInputs = [
     setuptools
@@ -22,8 +22,9 @@ buildPythonApplication {
   ];
 
   propagatedBuildInputs = [
-    pyqt5                       # runtime deps: declare here, not in TOML
+    pyqt5
+    qt5.qtbase qt5.qtwayland
   ];
 
-  buildInputs = [ qt5.qtbase qt5.qtwayland ]; # non-Python libs for runtime
+  buildInputs = [ qt5.qtbase qt5.qtwayland ];
 }

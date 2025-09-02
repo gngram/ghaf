@@ -1,9 +1,14 @@
+# Copyright 2022-2025 TII (SSRC) and the Ghaf contributors
+# SPDX-License-Identifier: Apache-2.0
+
 import time
 import socket
 from typing import Dict, Any, Optional
 
+from usb_passthrough_manager.transports.vsock import VsockServer
+import logging
 
-from devicerouter.transports.vsock import VsockServer
+logger = logging.getLogger("usb_passthrough_manager")
 
 class HostService:
     def __init__(self, port: int):
@@ -25,19 +30,18 @@ class HostService:
 
     def on_connect(self):
         self.connected = True
-        print("[HOST] Connected to controller VM")
+        logger.info("Connected to controller VM")
 
     def on_disconnect(self):
         if self.connected:
-            print("[HOST] Controller VM Disconnected;")
+            logger.info("Controller VM Disconnected;")
         self.connected = False
 
     def on_msg(self, msg: Dict[str, Any]):
         msgtype = msg.get("type")
         if msgtype == "selection":
             device_id = msg.get("device_id")
-            target_vm = msg.get("target_vm")
-            print(f"[HOST devicerouter] {msgtype} {device_id} -> {target_vm}")
+            target_vm = msg.get("current-vm")
+            logger.info(f"{msgtype} {device_id} -> {target_vm}")
         else:
-            print(f"[HOST] unknown msg: {msg}")
-
+            logger.error(f"Unknown msg: {msg}")

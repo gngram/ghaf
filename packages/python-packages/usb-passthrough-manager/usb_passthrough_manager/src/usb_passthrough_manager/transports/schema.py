@@ -1,32 +1,31 @@
+# Copyright 2022-2025 TII (SSRC) and the Ghaf contributors
+# SPDX-License-Identifier: Apache-2.0
+
 from typing import Dict, Any
 
-# - device_connected: {"type":"device_connected","device":{ "device_id":"vid:pid", "vendor":"vendor_name", "product":"product_name", "permitted_vms": ["vm1" "vm2"]},"current-vm":"vm-name"}
+# Valid schema
+# - device_connected: {"type":"device_connected","device":{ "device_id":"vid:pid", "vendor":"vendor_name", "product":"product_name", "permitted-vms": ["vm1" "vm2"], "current-vm":"vm-name"}}
 # - selection: {"type":"selection","device_id":"vid:pid","target_vm":"vm-name"}
 # - device_removed: {"type":"device_removed","device_id":"vid:pid"}
 
 def validate_schema(doc: Dict[str, Any]) -> bool:
     if not isinstance(doc, dict):
         doc = {}
-        
+
     stype = doc.get("type", "")
-    print(f"Input type {stype}")
     if stype == "device_connected":
         device = doc.get("device", {})
-        print(f"Iiiiiiiiiiiiiiiiiiiiiii {stype}")
         if not isinstance(device, dict):
-            print(f"Input not a dictionary {device}")
             return False
         else:
-            print(f"ppppppppppppppppppp")
-            if ( "device_id" in device 
-                 and "vendor" in device 
-                 and "product" in device 
-                 and "permitted_vms" in device
+            if ( "device_id" in device
+                 and "vendor" in device
+                 and "product" in device
+                 and "permitted-vms" in device
+                 and "current-vm" in device
             ):
-                print(f"TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT")
                 return True
             else:
-                print(f"Required field not found in {device}")
                 return False
     if stype == "selection":
         if "device_id" in doc and "target_vm" in doc:

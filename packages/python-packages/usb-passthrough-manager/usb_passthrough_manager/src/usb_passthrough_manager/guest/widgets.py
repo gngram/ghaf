@@ -1,3 +1,6 @@
+# Copyright 2022-2025 TII (SSRC) and the Ghaf contributors
+# SPDX-License-Identifier: Apache-2.0
+
 from functools import partial
 from typing import Dict, Any, List, Optional
 
@@ -5,6 +8,9 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import (
     QLabel, QComboBox, QVBoxLayout, QFrame
 )
+
+import logging
+logger = logging.getLogger("usb_passthrough_manager")
 
 SELECT_LABEL = "Select"
 
