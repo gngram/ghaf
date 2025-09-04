@@ -20,6 +20,7 @@ pkgs.mkShell {
     else
       source .venv/bin/activate
     fi
+    pip install shared_memory_dict
     echo "Welcome to your Python development environment."
     export QT_QPA_PLATFORM=wayland
     echo "Now you can:"

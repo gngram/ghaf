@@ -22,10 +22,9 @@ def main():
     app = QApplication(sys.argv)
     setup_logger(args.loglevel)
 
-    jsonfile = os.path.join(args.dir, "usb_db.json")
     w = App(
         host_port=args.hostport,
-        file_path=jsonfile
+        dir=args.dir
     )
     w.show()
     sys.exit(app.exec_())

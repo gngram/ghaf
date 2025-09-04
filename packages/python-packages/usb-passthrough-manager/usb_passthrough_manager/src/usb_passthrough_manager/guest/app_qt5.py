@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import json
-import socket
+import os
 import sys
 from pathlib import Path
 from typing import Any, Dict, List, Optional
@@ -34,25 +34,14 @@ def _read_schema_once(path: Path) -> Dict[str, Any]:
 
     return doc
 
-def _send_selection_vsock(device_id: str, selected_vm: str, host_port: int) -> None:
-    cid_host = getattr(socket, "VMADDR_CID_HOST", 2)
-    payload = {
-        "type": "selection",
-        "device_id": device_id,
-        "current-vm": selected_vm,
-    }
-    host = VsockClient(host_port, cid_host)
-    host.send(payload)
-
 class App(QWidget):
-    def __init__(self, file_path: Path, host_port: int,
-                 combo_width: Optional[int] = 100, popup_width: Optional[int] = None):
+    def __init__(self, dir: str, combo_width: Optional[int] = 100, popup_width: Optional[int] = None):
         super().__init__()
         self.setWindowTitle("Device Router")
         self.resize(760, 560)
 
-        self.file_path = file_path
-        self.host_port = host_port
+        self.file_path = Path(dir) / "device_registry.json"
+        self.fifo_path = Path(dir) / "switch.fifo"
         self.combo_width = combo_width
         self.popup_width = popup_width
         self.blocks: Dict[str, Dict[str, Any]] = {}
@@ -82,6 +71,7 @@ class App(QWidget):
 
         # Initial load
         self.reload_from_file()
+        self.fifo = os.open(self.fifo_path, "r", encoding="utf-8")
 
     def _clear_blocks(self):
         for info in self.blocks.values():
@@ -134,43 +124,33 @@ class App(QWidget):
         self.devices_layout.insertWidget(self.devices_layout.count() - 1, container)
         self.blocks[device_id] = {"container": container, "label": lbl, "combo": combo}
 
-    def reload_from_file_old(self):
-        doc = _read_schema_once(self.file_path)
-        devices = doc.get("devices", {}) or {}
-        mounts = doc.get("current-mount", {}) or {}
-
-        self._clear_blocks()
-
-        for dev_id, meta in devices.items():
-
-            permitted = list(meta.get("permitted-vms", []))
-            vendor = meta.get("vendor") or ""
-            product = meta.get("product") or ""
-            selected = mounts.get(dev_id)
-            print(dev_id, meta, selected)
-            self._add_block(dev_id, vendor, product, permitted, selected)
-
     def reload_from_file(self):
         doc = _read_schema_once(self.file_path)
         self._clear_blocks()
 
         for dev_id, meta in doc.items():
-            print(dev_id, meta)
             permitted = list(meta.get("permitted-vms", []))
             vendor = meta.get("vendor") or ""
             product = meta.get("product") or ""
             selected = meta.get("current-vm") or ""
             self._add_block(dev_id, vendor, product, permitted, selected)
 
+    def request_switch(self, device_id: str, new_vm: str) -> bool:
+        request = f"{device_id}->{new_vm}\n"
+        try:
+            os.write(self.fifo, request.encode("utf-8"))
+            return True
+        except Exception as e:
+            logger.error(f"Failed to send switch request: {e}")
+            return False
+
     def on_combo_changed(self, device_id: str):
         info = self.blocks.get(device_id)
         if not info:
             return
         combo: QComboBox = info["combo"]
-        choice = combo.currentText()
-        if choice == SELECT_LABEL:
+        new_vm = combo.currentText()
+        if new_vm == SELECT_LABEL:
             return
-        try:
-            _send_selection_vsock(device_id, choice, self.host_port)
-        except Exception as e:
-            QMessageBox.critical(self, "Send error", f"Failed to send selection:\n{e}")
+        if not self.request_switch(device_id, new_vm):
+            QMessageBox.critical(self, "Send error", f"Failed to send switch request!")

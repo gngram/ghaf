@@ -5,6 +5,9 @@ import argparse
 from usb_passthrough_manager.guest.registry_service import RegistryService
 from usb_passthrough_manager.logger import setup_logger
 import logging
+from pathlib import Path
+import os
+
 
 logger = logging.getLogger("usb_passthrough_manager")
 
@@ -22,12 +25,29 @@ def main():
 
     svc = RegistryService(args.cid, args.port, args.dir)
     svc.start()
+    fifo = Path(args.dir) / "switch.fifo"
+    try:
+        if fifo.exists():
+            os.unlink(fifo)
+        os.mkfifo(fifo, 0o622)  # write only for others
+    except FileExistsError:
+        raise RuntimeError("Can not create FIFO!")
+
+    with open(fifo, "r", encoding="utf-8") as f:
+        for line in f:
+            device_id, new_vm = line.rstrip("\n").split("->", 1)
+            if not svc.request_switch(device_id, new_vm):
+                logger.error(f"Failed to send vm_switch request")
+            else:
+                logger.info(f"vm_switch request sent successfuly to host: {device_id} -> {new_vm}")
+
     try:
         svc.wait()
     except KeyboardInterrupt:
         pass
     finally:
         svc.stop()
+        os.unlink(fifo)
 
 if __name__ == "__main__":
     main()

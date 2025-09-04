@@ -142,40 +142,45 @@ let
 
 in
 {
-  options.ghaf.hardware.passthrough.usb = {
-    manager = {
-      enable = mkEnableOption "USB passthrough manager.";
+  options.ghaf = {
+    hardware.passthrough.usb = {
+      manager = {
+        enable = mkEnableOption "USB passthrough manager.";
+      };
+
+      devices = mkOption {
+        description = ''
+          List of USB device(s) to passthrough.
+
+          Each device definition requires a name, and either vendorId and productId, or hostbus and hostport.
+          The latter is useful for addressing devices that may have different vendor and product IDs in the
+          same hardware generation.
+
+          Note that internal devices must follow the naming convention to be correctly identified
+          and subsequently used. Current special names are:
+            - 'cam0' for the internal cam0 device
+            - 'fpr0' for the internal fingerprint reader device
+        '';
+        type = types.listOf usbDevSubmodule;
+        default = [ ];
+        example = literalExpression ''
+          [
+            {
+              name = "cam0";
+              vendorId = "0123";
+              productId = "0123";
+            }
+            {
+              name = "fpr0";
+              hostbus = "3";
+              hostport = "3";
+            }
+          ]
+        '';
+      };
     };
-
-    devices = mkOption {
-      description = ''
-        List of USB device(s) to passthrough.
-
-        Each device definition requires a name, and either vendorId and productId, or hostbus and hostport.
-        The latter is useful for addressing devices that may have different vendor and product IDs in the
-        same hardware generation.
-
-        Note that internal devices must follow the naming convention to be correctly identified
-        and subsequently used. Current special names are:
-          - 'cam0' for the internal cam0 device
-          - 'fpr0' for the internal fingerprint reader device
-      '';
-      type = types.listOf usbDevSubmodule;
-      default = [ ];
-      example = literalExpression ''
-        [
-          {
-            name = "cam0";
-            vendorId = "0123";
-            productId = "0123";
-          }
-          {
-            name = "fpr0";
-            hostbus = "3";
-            hostport = "3";
-          }
-        ]
-      '';
+    services.usb_passthrough_manager = {
+      enable = mkEnableOption "USB passthrough manager.";
     };
   };
   config = mkMerge [
@@ -201,10 +206,9 @@ in
         pkgs.usb-passthrough-manager
       ];
     }
-    /*
-    (mkIf config.ghaf.hardware.passthrough.usb.manager.enable {
+    (mkIf config.ghaf.services.usb_passthrough_manager.enable {
 
-      systemd.services.vhotplug = {
+      systemd.services.usb-passthrough-manager = {
         enable = true;
         description = "usb_passthrough_manager";
         wantedBy = [ "multi-user.target" ];
@@ -213,11 +217,59 @@ in
           Type = "simple";
           Restart = "always";
           RestartSec = "1";
-          ExecStart = "${pkgs.usb_passthrough_manager_service}/bin/usb_passthrough_manager_service";
+          ExecStart = "${pkgs.usb-passthrough-manager}/bin/usb_passthrough_manager_service";
+
+          PrivateNetwork = true;
+          RestrictAddressFamilies = [ "AF_UNIX" "AF_VSOCK" ];
+          IPAccounting = true;
+          IPAddressDeny = "any";
+
+          DynamicUser = true;
+          ProtectSystem = "full";
+          ProtectHome = true;
+          ReadWritePaths = [ "/run/" ];
+          UMask = "0077";
+
+          PrivateDevices = true;
+          ProtectKernelTunables = true;
+          ProtectKernelModules = true;
+          ProtectKernelLogs = true;
+          ProtectControlGroups = true;
+          ProtectProc = "invisible";
+          ProcSubset = "pid";
+          PrivateMounts = true;
+          PrivateTmp = true;
+          ProtectHostname = true;
+          ProtectClock = true;
+          LockPersonality = true;
+          MemoryDenyWriteExecute = true;
+          RestrictRealtime = true;
+          RestrictNamespaces = true;
+          SystemCallArchitectures = "native";
+          NoNewPrivileges = true;
+          RemoveIPC = true;
+          KeyringMode = "private";
+          Delegate = false;
+
+          CapabilityBoundingSet = [ ];
+          AmbientCapabilities   = [ ];
+          RestrictSUIDSGID = true;
+
+          SystemCallFilter = [
+          "@basic-io"
+          "@file-system"
+          "@process"
+          "@signal"
+          "@io-event"
+          ];
+
+          # Notifications / misc
+          NotifyAccess = "main";
+
         };
         startLimitIntervalSec = 0;
       };
     })
-    */
+
   ];
 }
