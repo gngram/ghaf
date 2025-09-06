@@ -2,31 +2,42 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import json
-import os
-import sys
+import logging
 from pathlib import Path
-from typing import Any, Dict, List, Optional
-
-from usb_passthrough_manager.guest.widgets import device_title_html, SELECT_LABEL
-from usb_passthrough_manager.transports.vsock import VsockClient
+from typing import Any
 
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import (
-    QApplication, QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton,
-    QMessageBox, QScrollArea, QFrame, QComboBox
+    QComboBox,
+    QFrame,
+    QHBoxLayout,
+    QLabel,
+    QMessageBox,
+    QPushButton,
+    QScrollArea,
+    QVBoxLayout,
+    QWidget,
 )
 
-import logging
 logger = logging.getLogger("usb_passthrough_manager")
 
+SELECT_LABEL = "Select"
 
-def _read_schema_once(path: Path) -> Dict[str, Any]:
+
+def device_title_html(device_id: str, vendor: str, product: str) -> str:
+    # Bold: Vendor (Product) [vid:pid]:
+    v = vendor or ""
+    p = product or ""
+    return f"<b>{v} ({p}) [{device_id}]:</b>"
+
+
+def _read_schema_once(path: Path) -> dict[str, Any]:
     try:
-        logger.debug(f"schema file: {path}", path)
-        with open(path, "r") as f:
+        logger.debug(f"schema file: {path}")
+        with open(path) as f:
             doc = json.load(f) or {}
     except Exception as e:
-        logger.error(f"Failed to read schema file: {e}", file=sys.stderr)
+        logger.error(f"Failed to read schema file: {e}")
         return {}
 
     if not isinstance(doc, dict):
@@ -34,17 +45,23 @@ def _read_schema_once(path: Path) -> Dict[str, Any]:
 
     return doc
 
+
 class App(QWidget):
-    def __init__(self, dir: str, combo_width: Optional[int] = 100, popup_width: Optional[int] = None):
+    def __init__(
+        self,
+        data_dir: str,
+        combo_width: int | None = 100,
+        popup_width: int | None = None,
+    ):
         super().__init__()
         self.setWindowTitle("Device Router")
         self.resize(760, 560)
 
-        self.file_path = Path(dir) / "device_registry.json"
-        self.fifo_path = Path(dir) / "switch.fifo"
+        self.file_path = Path(data_dir) / "usb_db.json"
+        self.fifo_path = Path(data_dir) / "app_request.fifo"
         self.combo_width = combo_width
         self.popup_width = popup_width
-        self.blocks: Dict[str, Dict[str, Any]] = {}
+        self.blocks: dict[str, dict[str, Any]] = {}
 
         # Main layout
         root = QVBoxLayout(self)
@@ -71,7 +88,6 @@ class App(QWidget):
 
         # Initial load
         self.reload_from_file()
-        self.fifo = os.open(self.fifo_path, "r", encoding="utf-8")
 
     def _clear_blocks(self):
         for info in self.blocks.values():
@@ -81,10 +97,12 @@ class App(QWidget):
                 w.deleteLater()
         self.blocks.clear()
 
-    def _make_combo(self, device_id: str, items: List[str], selected: Optional[str]) -> QComboBox:
+    def _make_combo(
+        self, device_id: str, items: list[str], selected: str | None
+    ) -> QComboBox:
         combo = QComboBox()
         combo.setEditable(False)
-        all_items = [SELECT_LABEL] + items
+        all_items = [SELECT_LABEL, *items]
         combo.addItems(all_items)
 
         if self.combo_width:
@@ -100,13 +118,23 @@ class App(QWidget):
             longest_px = max((fm.horizontalAdvance(s) for s in all_items), default=80)
             combo.view().setMinimumWidth(longest_px + 60)
 
-        idx = 0 if not selected or selected not in items else (items.index(selected) + 1)
+        idx = (
+            0 if not selected or selected not in items else (items.index(selected) + 1)
+        )
         combo.setCurrentIndex(idx)
-        combo.currentIndexChanged.connect(lambda _i, d=device_id: self.on_combo_changed(d))
+        combo.currentIndexChanged.connect(
+            lambda _i, d=device_id: self.on_combo_changed(d)
+        )
         return combo
 
-    def _add_block(self, device_id: str, vendor: str, product: str,
-                   targets: List[str], selected: Optional[str]):
+    def _add_block(
+        self,
+        device_id: str,
+        vendor: str,
+        product: str,
+        targets: list[str],
+        selected: str | None,
+    ):
         container = QFrame()
         container.setFrameShape(QFrame.NoFrame)
         v = QVBoxLayout(container)
@@ -137,12 +165,14 @@ class App(QWidget):
 
     def request_switch(self, device_id: str, new_vm: str) -> bool:
         request = f"{device_id}->{new_vm}\n"
-        try:
-            os.write(self.fifo, request.encode("utf-8"))
-            return True
-        except Exception as e:
-            logger.error(f"Failed to send switch request: {e}")
-            return False
+        with open(self.fifo_path, "w", encoding="utf-8", buffering=1) as f:
+            try:
+                f.write(request)
+                return True
+            except Exception as e:
+                logger.error(f"Failed to send switch request: {e}")
+                return False
+        return False
 
     def on_combo_changed(self, device_id: str):
         info = self.blocks.get(device_id)
@@ -153,4 +183,4 @@ class App(QWidget):
         if new_vm == SELECT_LABEL:
             return
         if not self.request_switch(device_id, new_vm):
-            QMessageBox.critical(self, "Send error", f"Failed to send switch request!")
+            QMessageBox.critical(self, "Send error", "Failed to send switch request!")

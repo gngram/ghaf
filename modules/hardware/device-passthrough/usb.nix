@@ -1,7 +1,12 @@
 # Copyright 2025 TII (SSRC) and the Ghaf contributors
 # SPDX-License-Identifier: Apache-2.0
 
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 let
   inherit (lib)
     mkOption
@@ -220,7 +225,10 @@ in
           ExecStart = "${pkgs.usb-passthrough-manager}/bin/usb_passthrough_manager_service";
 
           PrivateNetwork = true;
-          RestrictAddressFamilies = [ "AF_UNIX" "AF_VSOCK" ];
+          RestrictAddressFamilies = [
+            "AF_UNIX"
+            "AF_VSOCK"
+          ];
           IPAccounting = true;
           IPAddressDeny = "any";
 
@@ -252,15 +260,15 @@ in
           Delegate = false;
 
           CapabilityBoundingSet = [ ];
-          AmbientCapabilities   = [ ];
+          AmbientCapabilities = [ ];
           RestrictSUIDSGID = true;
 
           SystemCallFilter = [
-          "@basic-io"
-          "@file-system"
-          "@process"
-          "@signal"
-          "@io-event"
+            "@basic-io"
+            "@file-system"
+            "@process"
+            "@signal"
+            "@io-event"
           ];
 
           # Notifications / misc

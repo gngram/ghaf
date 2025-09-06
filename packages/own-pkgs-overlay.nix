@@ -30,7 +30,9 @@
     pci-hotplug = final.python3Packages.callPackage ./python-packages/pci-hotplug/package.nix { };
     qemuqmp = final.python3Packages.callPackage ./python-packages/qemuqmp/package.nix { };
     rtl8126 = final.callPackage ./pkgs-by-name/rtl8126/package.nix { };
-    usb-passthrough-manager = final.python3Packages.callPackage ./python-packages/usb-passthrough-manager/package.nix { };
+    usb-passthrough-manager =
+      final.python3Packages.callPackage ./python-packages/usb-passthrough-manager/package.nix
+        { };
     vhotplug = final.python3Packages.callPackage ./python-packages/vhotplug/package.nix { };
     vinotify = final.python3Packages.callPackage ./python-packages/vinotify/package.nix { };
     vsockproxy = final.callPackage ./pkgs-by-name/vsockproxy/package.nix { };

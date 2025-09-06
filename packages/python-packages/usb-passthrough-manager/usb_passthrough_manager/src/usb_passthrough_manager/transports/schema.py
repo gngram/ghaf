@@ -1,14 +1,15 @@
 # Copyright 2022-2025 TII (SSRC) and the Ghaf contributors
 # SPDX-License-Identifier: Apache-2.0
 
-from typing import Dict, Any
+from typing import Any
 
 # Valid schema
 # - device_connected: {"type":"device_connected","device":{ "device_id":"vid:pid", "vendor":"vendor_name", "product":"product_name", "permitted-vms": ["vm1" "vm2"], "current-vm":"vm-name"}}
 # - selection: {"type":"selection","device_id":"vid:pid","target_vm":"vm-name"}
 # - device_removed: {"type":"device_removed","device_id":"vid:pid"}
 
-def validate_schema(doc: Dict[str, Any]) -> bool:
+
+def validate_schema(doc: dict[str, Any]) -> bool:
     if not isinstance(doc, dict):
         doc = {}
 
@@ -18,11 +19,12 @@ def validate_schema(doc: Dict[str, Any]) -> bool:
         if not isinstance(device, dict):
             return False
         else:
-            if ( "device_id" in device
-                 and "vendor" in device
-                 and "product" in device
-                 and "permitted-vms" in device
-                 and "current-vm" in device
+            if (
+                "device_id" in device
+                and "vendor" in device
+                and "product" in device
+                and "permitted-vms" in device
+                and "current-vm" in device
             ):
                 return True
             else:

@@ -23,8 +23,12 @@ buildPythonApplication {
 
   propagatedBuildInputs = [
     pyqt5
-    qt5.qtbase qt5.qtwayland
+    qt5.qtbase
+    qt5.qtwayland
   ];
 
-  buildInputs = [ qt5.qtbase qt5.qtwayland ];
+  buildInputs = [
+    qt5.qtbase
+    qt5.qtwayland
+  ];
 }
