@@ -7,14 +7,11 @@ from collections.abc import Generator
 from typing import Any
 
 
-def jsonl_send(sock: socket.socket, obj: dict[str, Any]) -> None:
+def send(sock: socket.socket, obj: dict[str, Any]) -> None:
     data = (json.dumps(obj, separators=(",", ":")) + "\n").encode("utf-8")
-    print("jsonl_send----")
     sock.sendall(data)
-    print("jsonl_send----done")
 
-
-def jsonl_reader(sock: socket.socket) -> Generator[dict[str, Any], None, None]:
+def receive(sock: socket.socket) -> Generator[dict[str, Any], None, None]:
     buf = b""
     while True:
         chunk = sock.recv(4096)

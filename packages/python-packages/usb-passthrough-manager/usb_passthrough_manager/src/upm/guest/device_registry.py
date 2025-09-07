@@ -9,13 +9,14 @@ import tempfile
 from pathlib import Path
 from typing import Any
 
-from usb_passthrough_manager.logger import log_entry_exit
-from usb_passthrough_manager.transports.vsock import VsockServer
+from upm.logger import log_entry_exit
+from upm.channel.vsock import VsockServer
+from upm.guest.popup_qt5 import show_new_device_popup_async
 
-logger = logging.getLogger("usb_passthrough_manager")
+logger = logging.getLogger("upm")
 
 
-class RegistryService:
+class DeviceRegister:
     def __init__(self, cid: int, port: int, data_dir: str):
         self.server = VsockServer(
             on_message=self.on_msg,
@@ -69,14 +70,14 @@ class RegistryService:
         self.server.join()
 
     @log_entry_exit
-    def request_switch(self, device_id: str, new_vm: str) -> bool:
+    def request_passthrough(self, device_id: str, new_vm: str) -> bool:
         device_schema = {
-            "type": "switch_request",
+            "type": "passthrough_request",
             "device_id": device_id,
             "current-vm": new_vm,
         }
         if not self.server.send(device_schema):
-            logger.error("Failed to send switch request to host")
+            logger.error("Failed to send passthrough request to host")
             return False
         return True
 
@@ -120,6 +121,18 @@ class RegistryService:
                     logger.error(f"Failed to clean up temporary file: {tmp_name}: {e}")
 
     @log_entry_exit
+    def passthrough_request(self, device_id: str, new_vm: str) -> bool:
+        device_schema = {
+            "type": "passthrough_request",
+            "device_id": device_id,
+            "current-vm": new_vm,
+        }
+        if not self.server.send(device_schema):
+            logger.critical("Passthrough error! Send request failed.")
+            return False
+        return True
+
+    @log_entry_exit
     def on_msg(self, msg: dict[str, Any]):
         msgtype = msg.get("type")
         # A new device connected
@@ -140,6 +153,14 @@ class RegistryService:
             self.device_registry[device_id] = entry
             self.atomic_write_registry(self.device_registry)
             logger.info(f"device_connected: {device_id} -> {entry['current-vm']}")
+            show_new_device_popup_async(
+                passthrough_handler = self.passthrough_request,
+                device_id=device_id,
+                vendor=entry["vendor"],
+                product=entry["product"],
+                permitted_vms=entry["permitted-vms"],
+                current_vm=entry["current-vm"],
+            )
         # A device removed
         elif msgtype == "device_removed":
             device_id = msg.get("device_id")
@@ -155,7 +176,7 @@ class RegistryService:
             self.device_registry = devices
             self.atomic_write_registry(self.device_registry)
         # A device switched
-        elif msgtype == "device_switched":
+        elif msgtype == "passthrough_ack":
             device_id = msg.get("device_id")
             new_vm = msg.get("current-vm")
             self.device_registry[device_id]["current-vm"] = new_vm

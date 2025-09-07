@@ -8,10 +8,10 @@ import time
 from collections.abc import Callable
 from typing import Any
 
-from usb_passthrough_manager.logger import log_entry_exit
-from usb_passthrough_manager.transports.protocol import jsonl_reader, jsonl_send
+from upm.logger import log_entry_exit
+import upm.channel.json_transport as json_transport
 
-logger = logging.getLogger("usb_passthrough_manager")
+logger = logging.getLogger("upm")
 
 AF_VSOCK = getattr(socket, "AF_VSOCK", None)
 SOCK_STREAM = socket.SOCK_STREAM
@@ -73,7 +73,7 @@ class VsockServer(threading.Thread):
     def run(self):
         while not self.stop_flag.is_set():
             try:
-                for msg in jsonl_reader(self.client()):
+                for msg in json_transport.receive(self.client()):
                     self.on_message(msg)
             except OSError as err:
                 logger.error(f"VSOCK server error: {err}")
@@ -84,7 +84,7 @@ class VsockServer(threading.Thread):
         logger.debug(f"Sending {data}")
         for _ in range(5):
             try:
-                jsonl_send(self.client(), data)
+                json_transport.send(self.client(), data)
                 return True
             except Exception:
                 logger.error("Vsock server error, send failed! Retrying...")
@@ -158,7 +158,7 @@ class VsockClient(threading.Thread):
     def run(self):
         while not self.stop_flag.is_set():
             try:
-                for msg in jsonl_reader(self.server()):
+                for msg in json_transport.receive(self.server()):
                     self.on_message(msg)
             except OSError as err:
                 logger.error(f"VSOCK server error: {err}")
@@ -168,7 +168,7 @@ class VsockClient(threading.Thread):
     def send(self, data: dict[str, Any]) -> bool:
         for _ in range(5):
             try:
-                jsonl_send(self.server(), data)
+                json_transport.send(self.server(), data)
                 return True
             except Exception:
                 logger.error("Vsock server error, send failed! Retrying...")

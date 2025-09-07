@@ -1,13 +1,16 @@
 # Copyright 2022-2025 TII (SSRC) and the Ghaf contributors
 # SPDX-License-Identifier: Apache-2.0
 
-import json
 import logging
+import threading
 from pathlib import Path
 from typing import Any
+import sys
+
 
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import (
+    QApplication,
     QComboBox,
     QFrame,
     QHBoxLayout,
@@ -17,50 +20,58 @@ from PyQt5.QtWidgets import (
     QScrollArea,
     QVBoxLayout,
     QWidget,
+    QGridLayout,
 )
 
-logger = logging.getLogger("usb_passthrough_manager")
+logger = logging.getLogger("upm")
 
 SELECT_LABEL = "Select"
 
 
-def device_title_html(device_id: str, vendor: str, product: str) -> str:
-    # Bold: Vendor (Product) [vid:pid]:
-    v = vendor or ""
-    p = product or ""
-    return f"<b>{v} ({p}) [{device_id}]:</b>"
+def popup_thread_func(
+    passthrough_handler,
+    device_id: str = "",
+    vendor: str = "",
+    product: str = "",
+    permitted_vms: list[str] = [],
+    current_vm: str = "",
+    ):
+    app = QApplication(sys.argv)
+    popup = NewDevicePopup(
+        passthrough_handler, device_id, vendor, product, permitted_vms, current_vm
+    )
+    popup.show()
+    sys.exit(app.exec_())
 
+def show_new_device_popup_async(
+    passthrough_handler,
+    device_id: str = "",
+    vendor: str = "",
+    product: str = "",
+    permitted_vms: list[str] = [],
+    current_vm: str = ""
+    ):
+    th = threading.Thread(target = popup_thread_func, args = (passthrough_handler, device_id, vendor, product, permitted_vms, current_vm))
+    th.start()
+    th.join()
 
-def _read_schema_once(path: Path) -> dict[str, Any]:
-    try:
-        logger.debug(f"schema file: {path}")
-        with open(path) as f:
-            doc = json.load(f) or {}
-    except Exception as e:
-        logger.error(f"Failed to read schema file: {e}")
-        return {}
-
-    if not isinstance(doc, dict):
-        return {}
-
-    return doc
-
-
-class App(QWidget):
+class NewDevicePopup(QWidget):
     def __init__(
         self,
-        data_dir: str,
-        combo_width: int | None = 100,
-        popup_width: int | None = None,
+        passthrough_handler,
+        device_id: str = "",
+        vendor: str = "",
+        product: str = "",
+        permitted_vms: list[str] = [],
+        current_vm: str = "",
+        width: int = 280,
+        height: int  = 150,
+
     ):
         super().__init__()
-        self.setWindowTitle("Device Router")
-        self.resize(760, 560)
+        self.setWindowTitle("New USB Device")
+        self.resize(width, height)
 
-        self.file_path = Path(data_dir) / "usb_db.json"
-        self.fifo_path = Path(data_dir) / "app_request.fifo"
-        self.combo_width = combo_width
-        self.popup_width = popup_width
         self.blocks: dict[str, dict[str, Any]] = {}
 
         # Main layout
@@ -77,17 +88,17 @@ class App(QWidget):
         # Bottom buttons
         btn_row = QHBoxLayout()
         btn_row.addStretch(1)
-        self.refresh_btn = QPushButton("Refresh")
-        self.refresh_btn.setToolTip("Re-read the JSON file and update the UI.")
-        self.refresh_btn.clicked.connect(self.reload_from_file)
         self.close_btn = QPushButton("Close")
         self.close_btn.clicked.connect(self.close)
-        btn_row.addWidget(self.refresh_btn)
         btn_row.addWidget(self.close_btn)
         root.addLayout(btn_row)
-
-        # Initial load
-        self.reload_from_file()
+        self.device_id = device_id
+        self.vendor = vendor
+        self.product = product
+        self.permitted_vms = permitted_vms
+        self.current_vm = current_vm
+        self.passthrough_handler = passthrough_handler
+        self.draw()
 
     def _clear_blocks(self):
         for info in self.blocks.values():
@@ -105,19 +116,10 @@ class App(QWidget):
         all_items = [SELECT_LABEL, *items]
         combo.addItems(all_items)
 
-        if self.combo_width:
-            combo.setFixedWidth(self.combo_width)
-        else:
-            combo.setSizeAdjustPolicy(QComboBox.AdjustToContents)
-            combo.setMinimumContentsLength(max((len(s) for s in all_items), default=8))
-
-        if self.popup_width:
-            combo.view().setMinimumWidth(self.popup_width)
-        else:
-            fm = combo.fontMetrics()
-            longest_px = max((fm.horizontalAdvance(s) for s in all_items), default=80)
-            combo.view().setMinimumWidth(longest_px + 60)
-
+        fm = combo.fontMetrics()
+        longest_px = max((fm.horizontalAdvance(s) for s in all_items), default=60)
+        combo.setFixedWidth(longest_px + 60)
+        combo.view().setMinimumWidth(longest_px + 60)
         idx = (
             0 if not selected or selected not in items else (items.index(selected) + 1)
         )
@@ -125,6 +127,7 @@ class App(QWidget):
         combo.currentIndexChanged.connect(
             lambda _i, d=device_id: self.on_combo_changed(d)
         )
+
         return combo
 
     def _add_block(
@@ -143,7 +146,7 @@ class App(QWidget):
         lbl = QLabel()
         lbl.setTextFormat(Qt.RichText)
         lbl.setTextInteractionFlags(Qt.TextSelectableByMouse)
-        lbl.setText(device_title_html(device_id, vendor, product))
+        lbl.setText(f"<b>{self.vendor} ({self.product}) [{self.device_id}]:</b>")
         v.addWidget(lbl)
 
         combo = self._make_combo(device_id, targets, selected)
@@ -152,27 +155,9 @@ class App(QWidget):
         self.devices_layout.insertWidget(self.devices_layout.count() - 1, container)
         self.blocks[device_id] = {"container": container, "label": lbl, "combo": combo}
 
-    def reload_from_file(self):
-        doc = _read_schema_once(self.file_path)
+    def draw(self):
         self._clear_blocks()
-
-        for dev_id, meta in doc.items():
-            permitted = list(meta.get("permitted-vms", []))
-            vendor = meta.get("vendor") or ""
-            product = meta.get("product") or ""
-            selected = meta.get("current-vm") or ""
-            self._add_block(dev_id, vendor, product, permitted, selected)
-
-    def request_switch(self, device_id: str, new_vm: str) -> bool:
-        request = f"{device_id}->{new_vm}\n"
-        with open(self.fifo_path, "w", encoding="utf-8", buffering=1) as f:
-            try:
-                f.write(request)
-                return True
-            except Exception as e:
-                logger.error(f"Failed to send switch request: {e}")
-                return False
-        return False
+        self._add_block(self.device_id, self.vendor, self.product, self.permitted_vms, self.current_vm)
 
     def on_combo_changed(self, device_id: str):
         info = self.blocks.get(device_id)
@@ -182,5 +167,5 @@ class App(QWidget):
         new_vm = combo.currentText()
         if new_vm == SELECT_LABEL:
             return
-        if not self.request_switch(device_id, new_vm):
-            QMessageBox.critical(self, "Send error", "Failed to send switch request!")
+        if not self.passthrough_handler(device_id, new_vm):
+            QMessageBox.critical(self, "Send error", "Failed to send passthrough request!")

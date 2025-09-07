@@ -13,7 +13,6 @@ authors = [{ name = "Ganga Ram" }]
 readme = "README.md"
 requires-python = ">=3.8"
 dependencies = [
-  # PyQt5 is only needed for the GUI. You can also install it manually.
   "PyQt5>=5.15.0",
 ]
 
@@ -21,10 +20,10 @@ dependencies = [
 usb_passthrough_manager = ["PyQt5>=5.15.0"]
 
 [project.scripts]
-usb_passthrough_manager = "apps.usb_passthrough_manager:main"
-usb_passthrough_service = "apps.usb_passthrough_service:main"
-usb_passthrough_host_test_service = "apps.usb_passthrough_host_test_service:main"
-usb_passthrough_host_test_app = "apps.usb_passthrough_host_test_app:main"
+upm_app = "bin.upm_app:main"
+upm_service = "bin.upm_service:main"
+upm_host_service = "bin.upm_host:main"
+upm_host_test_app = "bin.upm_host_test_app:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]

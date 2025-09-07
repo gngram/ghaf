@@ -6,10 +6,10 @@ import os
 import threading
 from pathlib import Path
 
-from usb_passthrough_manager.guest.registry_service import RegistryService
-from usb_passthrough_manager.logger import log_entry_exit
+from upm.guest.device_registry import DeviceRegister
+from upm.logger import log_entry_exit
 
-logger = logging.getLogger("usb_passthrough_manager")
+logger = logging.getLogger("upm")
 
 
 def _create_fifo(service_dir: str) -> Path:
@@ -24,23 +24,23 @@ def _create_fifo(service_dir: str) -> Path:
     return fifo
 
 
-def fifo_reader_thread(fifo: Path, svc: RegistryService, stop: threading.Event) -> None:
+def fifo_reader_thread(fifo: Path, svc: DeviceRegister, stop: threading.Event) -> None:
     while not stop.is_set():
         with open(fifo, encoding="utf-8") as f:
             logger.debug("Fifo opened")
             for line in f:
                 logger.debug(f"Received request {line}")
                 device_id, new_vm = line.rstrip("\n").split("->", 1)
-                if not svc.request_switch(device_id, new_vm):
-                    logger.error("Failed to send vm_switch request")
+                if not svc.request_passthrough(device_id, new_vm):
+                    logger.error("Failed to send passthrough request")
                 else:
                     logger.info(
-                        f"vm_switch request sent successfuly to host: {device_id} -> {new_vm}"
+                        f"Passthroughrequest sent successfuly to host: {device_id} -> {new_vm}"
                     )
 
 
 @log_entry_exit
-def handle_app_request(service_dir: str, svc: RegistryService) -> threading.Thread:
+def handle_app_request(service_dir: str, svc: DeviceRegister) -> threading.Thread:
     fifo = _create_fifo(service_dir)
     stop_event = threading.Event()
     th = threading.Thread(target=fifo_reader_thread, args=(fifo, svc, stop_event))

@@ -4,11 +4,11 @@
 import argparse
 import logging
 
-from usb_passthrough_manager.guest.app_request import handle_app_request
-from usb_passthrough_manager.guest.registry_service import RegistryService
-from usb_passthrough_manager.logger import setup_logger
+from upm.guest.app_interface import handle_app_request
+from upm.guest.device_registry import DeviceRegister
+from upm.logger import setup_logger
 
-logger = logging.getLogger("usb_passthrough_manager")
+logger = logging.getLogger("upm")
 
 
 def build_parser():
@@ -33,7 +33,7 @@ def main():
     args = build_parser().parse_args()
     setup_logger(args.loglevel)
 
-    svc = RegistryService(args.cid, args.port, args.dir)
+    svc = DeviceRegister(args.cid, args.port, args.dir)
     svc.start()
     th, stop_th = handle_app_request(args.dir, svc)
     try:

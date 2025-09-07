@@ -4,14 +4,14 @@
 import logging
 from functools import wraps
 
-logger = logging.getLogger("usb_passthrough_manager")
+logger = logging.getLogger("upm")
 CALL_TRACER = True
 
 
 def setup_logger(level: str = "info"):
     handler = logging.StreamHandler()
     handler.setFormatter(
-        logging.Formatter("[usb_passthrough_manager] %(levelname)s %(message)s")
+        logging.Formatter("[upm] %(levelname)s %(message)s")
     )
     logger.addHandler(handler)
 

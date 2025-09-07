@@ -6,10 +6,10 @@ import logging
 import sys
 
 from PyQt5.QtWidgets import QApplication
-from usb_passthrough_manager.guest.app_qt5 import App
-from usb_passthrough_manager.logger import setup_logger
+from upm.guest.app_qt5 import App
+from upm.logger import setup_logger
 
-logger = logging.getLogger("usb_passthrough_manager")
+logger = logging.getLogger("upm")
 
 
 def build_parser():
@@ -30,7 +30,7 @@ def main():
     app = QApplication(sys.argv)
     setup_logger(args.loglevel)
 
-    w = App(dir=args.dir)
+    w = App(data_dir=args.dir)
     w.show()
     sys.exit(app.exec_())
 

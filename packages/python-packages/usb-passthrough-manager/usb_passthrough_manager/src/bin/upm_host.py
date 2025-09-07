@@ -7,15 +7,15 @@ import logging
 import os
 from pathlib import Path
 
-from usb_passthrough_manager.host.service import HostService
-from usb_passthrough_manager.logger import setup_logger
+from upm.host.service import HostService
+from upm.logger import setup_logger
 
-logger = logging.getLogger("usb_passthrough_manager")
+logger = logging.getLogger("upm")
 
 
 def emulate(svc):
     logger.info("Emulating...")
-    fifo = Path("/tmp/switch.fifo")
+    fifo = Path("/tmp/device_event.fifo")
     try:
         if fifo.exists():
             os.unlink(fifo)
@@ -41,7 +41,7 @@ def emulate(svc):
                     break
                 logger.debug("Processing request: " + request["type"])
                 match request["type"]:
-                    case "switch_request":
+                    case "passthrough_request":
                         if "device_id" not in request or "current-vm" not in request:
                             logger.error(
                                 "Could not find device_id or current-vm field in request! Send new command!"
@@ -49,11 +49,11 @@ def emulate(svc):
                         else:
                             device_id = request.get("device_id")
                             target_vm = request.get("current-vm")
-                            if not svc.notify_device_switch(device_id, target_vm):
+                            if not svc.notify_device_passthrough(device_id, target_vm):
                                 logger.error("Notify error! Service restart required.")
                             else:
                                 logger.info(
-                                    f"Device {device_id} switched to VM {target_vm}"
+                                    f"Device {device_id} passed through to VM {target_vm}"
                                 )
                         break
                     case "reset":
@@ -120,7 +120,7 @@ def build_parser():
     return p
 
 
-def fake_switch_device(metadata, device_id, new_vm):
+def fake_device_passthrough(metadata, device_id, new_vm):
     logger.info(
         f"device id: {device_id} connected to vm: {new_vm}, metadata: {metadata}"
     )
@@ -134,8 +134,8 @@ def main():
     svc = HostService(
         port=args.port,
         cid=args.cid,
-        switch_handler=fake_switch_device,
-        metadata="fake_switch_device_metadata",
+        passthrough_handler=fake_device_passthrough,
+        metadata="fake_passthrough_device_metadata",
     )
     svc.start()
     logger.info("[HOST] Running. Ctrl+C to exit.")
