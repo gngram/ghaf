@@ -27,7 +27,8 @@
     #nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
 
     ghafpkgs = {
-      url = "github:tiiuae/ghafpkgs";
+      #url = "github:tiiuae/ghafpkgs";
+      url = "github:tiiuae/ghafpkgs/5bf94efa061d9f423c74977ebd0b523803281e5b";
       inputs = {
         nixpkgs.follows = "nixpkgs";
         flake-parts.follows = "flake-parts";
