@@ -137,6 +137,7 @@ class DeviceRegister:
     def on_msg(self, msg: dict[str, Any]):
         msgtype = msg.get("type")
         # A new device connected
+        logger.info(f"New message received: {msgtype}")
         if msgtype == "device_connected":
             device = msg.get("device") or {}
             device_id = device.get("device_id")

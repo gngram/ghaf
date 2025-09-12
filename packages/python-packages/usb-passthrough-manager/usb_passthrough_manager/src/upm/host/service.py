@@ -176,7 +176,7 @@ class HostService:
                         logger.info(
                             f"Device {device_id} passed through to VM {target_vm} ---------------------------------------"
                         )
-                        self.device_registry[device_id]["current-vm"] = target_vm
+                        #self.device_registry[device_id]["current-vm"] = target_vm
                 else:
                     logger.error("Passthrough error! Service restart required")
             else:

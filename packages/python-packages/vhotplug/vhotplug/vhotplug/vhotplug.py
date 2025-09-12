@@ -102,8 +102,8 @@ async def device_event_with_user_notification(context, config, device, upm_host)
                     device_id = usb_info.dev_id()
                     if not upm_host.notify_device_connected(device_id, usb_info.vendor_name, usb_info.product_name, permitted, ""):
                         logger.error("Notify device connected failed")
-                        userDevices.add(device_id, usb_info)
                     else:
+                        userDevices.add(device_id, usb_info)
                         logger.info(f"Device {device_id} connected")
             except RuntimeError as e:
                 logger.error("Failed to attach device: %s", e)
@@ -118,7 +118,7 @@ async def device_event_with_user_notification(context, config, device, upm_host)
                 await remove_usb_device(config, usb_info, None)
                 device_id = usb_info.dev_id()
                 if userDevices.has(device_id):
-                    if not upm_host.notify_device_disconnected(f"{usb_info.devnum}:{usb_info.busnum}"):
+                    if not upm_host.notify_device_disconnected(device_id):
                         logger.error("Notify device disconnected failed")
                     userDevices.delete(device_id)
             except RuntimeError as e:
@@ -151,14 +151,9 @@ def handle_user_device_passthrough_request(metadata, device_id, new_vm):
         if not usb_info:
             logger.error("Device not found")
             return False
-        else:
-            logger.info("RRRRRRRRRRRRRRRRRRRRRRRRRetrieved device info: {usb_info.dev_id()}")
         vm = config.get_vm(new_vm)
-        ok = asyncio.run(remove_usb_device(config, usb_info, None))
-        ok = asyncio.run(attach_usb_device(config, None, usb_info, vm))
-        if not ok:
-            logger.error("Failed to switch device")
-            return False
+        asyncio.run(remove_usb_device(config, usb_info, None))
+        asyncio.run(attach_usb_device(config, None, usb_info, vm))
         return True
     except RuntimeError as e:
         logger.error("Failed to attach device: %s", e)
@@ -183,7 +178,7 @@ async def async_main():
     config = Config(args.config)
 
 
-    #upm_logger_setup("debug" if args.debug else "info")
+    upm_logger_setup("debug" if args.debug else "info")
 
     context = pyudev.Context()
     if args.attach_connected:
