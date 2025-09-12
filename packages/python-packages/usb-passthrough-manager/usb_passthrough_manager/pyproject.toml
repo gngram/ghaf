@@ -11,7 +11,7 @@ version = "0.1.0"
 description = "Host ↔ guest VM with real user, usb passthrough management over vsock with a PyQt6 UI"
 authors = [{ name = "Ganga Ram" }]
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.13"
 license = "Apache-2.0"
 dependencies = [
   "PyQt6>=6.9.0",

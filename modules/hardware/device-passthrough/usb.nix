@@ -214,6 +214,7 @@ in
         pkgs.usb-passthrough-manager
       ];
     }
+    /*
     (mkIf config.ghaf.services.usb_passthrough_manager.enable {
 
       systemd.services.usb-passthrough-manager = {
@@ -230,6 +231,7 @@ in
         startLimitIntervalSec = 0;
       };
     })
+    */
 
   ];
 }

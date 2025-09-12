@@ -78,6 +78,21 @@ let
       )
       [
         {
+          description= "Devices for Multiple VMs";
+          allowedVms= [
+              "ChromeVM"
+              "BusinessVM"
+          ];
+          allow = [
+              {
+                  vendorId = "0c45";
+                  productId = "6366";
+                  description = "Camera";
+              }
+          ];
+        }
+
+        {
           description = "Webcams for ChromeVM";
           targetVm = "ChromeVM";
           allow = [
@@ -291,7 +306,7 @@ in
         Type = "simple";
         Restart = "always";
         RestartSec = "1";
-        ExecStart = "${pkgs.vhotplug}/bin/vhotplug -a -c /etc/vhotplug.conf";
+        ExecStart = "${pkgs.newplug}/bin/vhotplug -a -c /etc/vhotplug.conf";
       };
       startLimitIntervalSec = 0;
     };

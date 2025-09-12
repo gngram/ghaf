@@ -29,7 +29,10 @@
     pci-binder = final.callPackage ./pkgs-by-name/pci-binder/package.nix { };
     rtl8126 = final.callPackage ./pkgs-by-name/rtl8126/package.nix { };
     usb-passthrough-manager =
-      final.python3Packages.callPackage ./python-packages/usb-passthrough-manager/package.nix
+      final.python3Packages.callPackage ./python-packages/usb-passthrough-manager/application.nix
+        { };
+    newplug =
+      final.python3Packages.callPackage ./python-packages/vhotplug/package.nix
         { };
     vsockproxy = final.callPackage ./pkgs-by-name/vsockproxy/package.nix { };
     wait-for-unit = final.callPackage ./pkgs-by-name/wait-for-unit/package.nix { };
