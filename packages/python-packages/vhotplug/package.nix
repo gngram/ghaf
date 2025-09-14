@@ -9,14 +9,7 @@
   psutil,
   inotify-simple,
   setuptools,
-  gtk4,
-  gobject-introspection,
-  wrapGAppsHook,
-  gsettings-desktop-schemas,
-  #adwaita-icon-theme,
-
-  # Python packages
-  pygobject3,
+  usb-passthrough-manager,
 }:
 buildPythonApplication {
   pname = "vhotplug";
@@ -28,7 +21,8 @@ buildPythonApplication {
     psutil
     inotify-simple
     qemu-qmp
-    (pkgs.python3Packages.callPackage ./../usb-passthrough-manager/package.nix {})
+    usb-passthrough-manager
+    #(pkgs.python3Packages.callPackage ./../usb-passthrough-manager/package.nix {})
   ];
 
   doCheck = false;
