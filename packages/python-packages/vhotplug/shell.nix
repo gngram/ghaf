@@ -7,10 +7,13 @@
 pkgs.mkShell {
   packages = [
     pkgs.python3
-    pkgs.python3Packages.pyqt6
+    pkgs.gtk4
+  pkgs.gobject-introspection
+  pkgs.wrapGAppsHook
+  pkgs.gsettings-desktop-schemas
+    pkgs.python3Packages.pip
+    pkgs.python3Packages.pygobject3
     pkgs.python3Packages.virtualenv
-    pkgs.qt6.qtbase
-    pkgs.qt6.qtwayland
     pkgs.python3Packages.setuptools
     pkgs.python3Packages.wheel
     pkgs.python3Packages.build
@@ -24,20 +27,11 @@ pkgs.mkShell {
     fi
     source .venv/bin/activate
 
-    # (Optional) keep deps under Nix; don't let pip pull another PyQt6 wheel
-    # Remove PyQt6 from pyproject deps OR install with --no-deps:
-    echo "Tip: use 'pip install -e . --no-deps' to avoid pulling PyQt6 from PyPI"
-
-    # Tell Qt where plugins live (platforms/, imageformats/, etc.)
-    export QT_PLUGIN_PATH=${pkgs.qt6.qtbase}/lib/qt-6/plugins:${pkgs.qt6.qtwayland}/lib/qt-6/plugins
-
-    # You can force platform while testing (comment one out as needed)
-    #export QT_QPA_PLATFORM=wayland
-    # export QT_QPA_PLATFORM=xcb
+    echo "Tip: use 'pip install -e . --no-deps' to avoid pulling dependencies from PyPI"
 
     echo "Welcome to your Python dev env."
     echo "Now you can run:"
     echo "  pip install -e . --no-deps"
-    echo "  QT_DEBUG_PLUGINS=1 upm_app"
+
   '';
 }

@@ -1,42 +1,30 @@
 # Copyright 2022-2025 TII (SSRC) and the Ghaf contributors
 # SPDX-License-Identifier: Apache-2.0
-{
-  pkgs ? import <nixpkgs> { },
-}:
+
+{ pkgs ? import <nixpkgs> {} }:
 
 pkgs.mkShell {
-  packages = [
-    pkgs.python311
-    pkgs.python311Packages.pyqt6
-    pkgs.python311Packages.virtualenv
-    pkgs.qt6.qtbase
-    pkgs.qt6.qtwayland
-    pkgs.python311Packages.setuptools
-    pkgs.python311Packages.wheel
-    pkgs.python311Packages.build
+  packages = with pkgs; [
+    # Python + PyGObject
+    python313
+    python313Packages.pygobject3
+
+    # GTK & GI runtime
+    gtk4
+    gobject-introspection
+
+    # Display backends (Wayland/X11) — harmless if both are present
+    wayland
   ];
 
   shellHook = ''
-    # Create a venv that can see Nix-installed packages (PyQt6)
-    if [ ! -d .venv ]; then
-      virtualenv --system-site-packages .venv
-    fi
-    source .venv/bin/activate
+    # Prefer Wayland if available, fallback to X11
+    #export GDK_BACKEND=wayland
 
-    # (Optional) keep deps under Nix; don't let pip pull another PyQt6 wheel
-    # Remove PyQt6 from pyproject deps OR install with --no-deps:
-    echo "Tip: use 'pip install -e . --no-deps' to avoid pulling PyQt6 from PyPI"
-
-    # Tell Qt where plugins live (platforms/, imageformats/, etc.)
-    export QT_PLUGIN_PATH=${pkgs.qt6.qtbase}/lib/qt-6/plugins:${pkgs.qt6.qtwayland}/lib/qt-6/plugins
-
-    # You can force platform while testing (comment one out as needed)
-    #export QT_QPA_PLATFORM=wayland
-    # export QT_QPA_PLATFORM=xcb
-
-    echo "Welcome to your Python dev env."
-    echo "Now you can run:"
-    echo "  pip install -e . --no-deps"
-    echo "  QT_DEBUG_PLUGINS=1 upm_app"
+    # Ensure typelibs are discoverable in plain shells (usually OK without this,
+    # but helpful in some setups)
+    #export GI_TYPELIB_PATH="${pkgs.gtk3}/lib/girepository-1.0:${pkgs.gobject-introspection}/lib/girepository-1.0:$GI_TYPELIB_PATH"
+    #export XDG_DATA_DIRS="${pkgs.gtk3}/share:$XDG_DATA_DIRS"
   '';
 }
+

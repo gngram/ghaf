@@ -5,8 +5,7 @@ import argparse
 import logging
 import sys
 
-from PyQt6.QtWidgets import QApplication
-from upm.guest.app_qt6 import App
+from upm.guest.device_bridge import DeviceBridge
 from upm.logger import setup_logger
 
 logger = logging.getLogger("upm")
@@ -27,13 +26,10 @@ def build_parser():
 
 def main():
     args = build_parser().parse_args()
-    app = QApplication(sys.argv)
     setup_logger(args.loglevel)
-
-    w = App(data_dir=args.dir)
-    w.show()
-    sys.exit(app.exec())
-
+    
+    app = DeviceBridge(data_dir=args.dir)
+    sys.exit(app.run(None))
 
 if __name__ == "__main__":
     main()

@@ -10,7 +10,7 @@ from pathlib import Path
 from typing import Any
 
 from upm.channel.vsock import VsockServer
-from upm.guest.popup_qt6 import show_new_device_popup_async
+from upm.guest.notify_user import show_new_device_popup_async, DeviceStruct
 from upm.logger import log_entry_exit
 
 logger = logging.getLogger("upm")
@@ -155,14 +155,15 @@ class DeviceRegister:
             self.device_registry[device_id] = entry
             self.atomic_write_registry(self.device_registry)
             logger.info(f"device_connected: {device_id} -> {entry['current-vm']}")
-            show_new_device_popup_async(
+            dev_struct = DeviceStruct(
                 passthrough_handler=self.passthrough_request,
                 device_id=device_id,
                 vendor=entry["vendor"],
                 product=entry["product"],
                 permitted_vms=entry["permitted-vms"],
-                current_vm=entry["current-vm"],
-            )
+                current_vm=entry["current-vm"])
+                
+            show_new_device_popup_async(dev_struct=dev_struct)
         # A device removed
         elif msgtype == "device_removed":
             device_id = msg.get("device_id")

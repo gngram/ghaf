@@ -1,44 +1,43 @@
 # Copyright 2022-2025 TII (SSRC) and the Ghaf contributors
 # SPDX-License-Identifier: Apache-2.0
 
-{ 
+{
   buildPythonPackage,
-  qt6,
-  pyqt6,
   setuptools,
   wheel,
-  ... 
+
+  # GTK / GI runtime
+  gtk4,
+  gobject-introspection,
+  wrapGAppsHook,
+  gsettings-desktop-schemas,
+  #adwaita-icon-theme,
+
+  # Python packages
+  pygobject3,
 }:
 buildPythonPackage {
-  pname = "usb_passthrough_core";
+  pname = "usb_passthrough";
   version = "0.1.0";
   src = ./usb_passthrough_manager;
   pyproject = true;
 
-
-  /*
-  build-system = [
+  nativeBuildInputs = [
     setuptools
     wheel
-    qt6.wrapQtAppsHook
+    gobject-introspection
+    wrapGAppsHook
   ];
-  */
 
   propagatedBuildInputs = [
-    pyqt6
-    qt6.qtbase
-    qt6.qtwayland
+    pygobject3
   ];
 
-  nativeBuildInputs = [
-    qt6.wrapQtAppsHook 
-    setuptools
-    wheel
-  ];
-
+  # GTK & runtime assets
   buildInputs = [
-    qt6.qtbase
-    qt6.qtwayland
+    gtk4
+    gsettings-desktop-schemas
+    #adwaita-icon-theme
   ];
 
   pythonImportsCheck = [ "upm" ];

@@ -1,4 +1,4 @@
-# Copyright 2022-2024 TII (SSRC) and the Ghaf contributors
+# Copyright 2022-202 TII (SSRC) and the Ghaf contributors
 # SPDX-License-Identifier: Apache-2.0
 {
   pkgs,
@@ -9,7 +9,14 @@
   psutil,
   inotify-simple,
   setuptools,
-  qt6,
+  gtk4,
+  gobject-introspection,
+  wrapGAppsHook,
+  gsettings-desktop-schemas,
+  #adwaita-icon-theme,
+
+  # Python packages
+  pygobject3,
 }:
 buildPythonApplication {
   pname = "vhotplug";
@@ -36,7 +43,7 @@ buildPythonApplication {
   src = ./vhotplug;
 
   build-system = [ setuptools ];
-  nativeBuildInputs = [ qt6.wrapQtAppsHook ];
+  nativeBuildInputs = [  ];
 
   meta = {
     description = "Virtio Hotplug";

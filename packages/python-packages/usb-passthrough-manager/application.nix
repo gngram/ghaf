@@ -3,11 +3,20 @@
 
 {
   buildPythonApplication,
-  wheel,
   setuptools,
-  qt6,
-  pyqt6,
+  wheel,
+
+  # GTK / GI runtime
+  gtk4,
+  gobject-introspection,
+  wrapGAppsHook,
+  gsettings-desktop-schemas,
+  #adwaita-icon-theme,
+
+  # Python packages
+  pygobject3,
 }:
+
 buildPythonApplication {
   pname = "usb_passthrough_manager";
   version = "0.0.1";
@@ -17,22 +26,18 @@ buildPythonApplication {
   nativeBuildInputs = [
     setuptools
     wheel
-    qt6.wrapQtAppsHook
+    gobject-introspection
+    wrapGAppsHook
   ];
 
   propagatedBuildInputs = [
-    pyqt6
-    qt6.qtbase
-    qt6.qtwayland
+    pygobject3
   ];
 
+  # GTK & runtime assets
   buildInputs = [
-    qt6.qtbase
-    qt6.qtwayland
+    gtk4
+    gsettings-desktop-schemas
+    #adwaita-icon-theme
   ];
-
-  postFixup = ''
-    wrapQtApp $out/bin/upm_app --prefix QT_PLUGIN_PATH : ${qt6.qtbase}/lib/qt-6/plugins:{qt6.qtwayland}/lib/qt-6/plugins
-    wrapQtApp $out/bin/upm_service --prefix QT_PLUGIN_PATH : ${qt6.qtbase}/lib/qt-6/plugins:{qt6.qtwayland}/lib/qt-6/plugins
-  '';
 }
