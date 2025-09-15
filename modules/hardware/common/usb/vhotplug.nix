@@ -78,6 +78,21 @@ let
       )
       [
         {
+          description = "Devices for Multiple VMs";
+          allowedVms = [
+            "ChromeVM"
+            "BusinessVM"
+          ];
+          allow = [
+            {
+              vendorId = "0c45";
+              productId = "6366";
+              description = "Arduino USB Camera";
+            }
+          ];
+        }
+
+        {
           description = "Webcams for ChromeVM";
           targetVm = "ChromeVM";
           allow = [
@@ -243,7 +258,7 @@ in
           Enable external API.
         '';
         type = types.bool;
-        default = true;
+        default = false;
       };
 
       port = lib.mkOption {
@@ -254,6 +269,25 @@ in
         '';
       };
     };
+    upmclient = {
+      enable = mkEnableOption "USB passthrough manager client";
+      server_cid = lib.mkOption {
+        type = lib.types.int;
+        default = 1;
+        description = ''
+          CID of API server runing on a guest vm.
+        '';
+      };
+
+      server_port = lib.mkOption {
+        type = lib.types.int;
+        default = 7000;
+        description = ''
+          Port number for USB passthrough manager server.
+        '';
+      };
+    };
+
   };
 
   config = mkIf cfg.enable {
@@ -278,6 +312,11 @@ in
           inherit (cfg.api) enable;
           inherit (cfg.api) port;
           transport = "vsock";
+        };
+        upmclient = {
+          inherit (cfg.upmclient) enable;
+          inherit (cfg.upmclient) server_cid;
+          inherit (cfg.upmclient) server_port;
         };
       };
     };
