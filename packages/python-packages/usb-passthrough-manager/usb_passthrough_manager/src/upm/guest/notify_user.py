@@ -38,7 +38,7 @@ def show_new_device_popup_async(dev_struct: DeviceStruct):
 class PopupWindow(Gtk.ApplicationWindow):
     def __init__(self, app: Gtk.Application, dev_struct: DeviceStruct):
         super().__init__(application=app, title="Notification")
-        self.set_default_size(280, 280)
+        self.set_default_size(300, 290)
 
         self.dev_struct = dev_struct
         self.blocks: dict[str, dict[str, Gtk.Widget]] = {}
@@ -54,13 +54,13 @@ class PopupWindow(Gtk.ApplicationWindow):
         content_box.set_hexpand(True)
         content_box.set_vexpand(True)
         root.append(content_box)
-        
+
         notice_lbl = Gtk.Label(label="New device detected!")
         notice_lbl.set_margin_top(10)
         notice_lbl.set_xalign(0.5)
         notice_lbl.add_css_class("heading")
         content_box.append(notice_lbl)
-        
+
         notice_lbl = Gtk.Label(label="Select the VM to passthrough to:")
         notice_lbl.set_margin_top(10)
         notice_lbl.set_xalign(0.5)
@@ -137,7 +137,7 @@ class PopupWindow(Gtk.ApplicationWindow):
         notice_lbl = Gtk.Label(label=f"{product}:({vendor})")
         notice_lbl.set_xalign(0.5)
         vbox.append(notice_lbl)
-       
+
         dropdown = self._make_dropdown(device_id, targets, selected)
         vbox.append(dropdown)
 
@@ -191,7 +191,7 @@ class PopupWindow(Gtk.ApplicationWindow):
 
 class NotifyUser(Gtk.Application):
     def __init__(self, dev_struct: DeviceStruct):
-        super().__init__(application_id="com.example.DeviceRouter",
+        super().__init__(application_id="ghaf.notify.user",
                          flags=Gio.ApplicationFlags.FLAGS_NONE)
         self._dev_struct = dev_struct
         self._win: Optional[PopupWindow] = None

@@ -143,7 +143,7 @@ class AppWindow(Gtk.ApplicationWindow):
             product = meta.get("product") or ""
             selected = meta.get("current-vm") or ""
             self._add_block_ui(dev_id, vendor, product, permitted, selected)
-        
+
     def _request_passthrough(self, device_id: str, new_vm: str) -> bool:
         request = f"{device_id}->{new_vm}\n"
         with open(self.fifo_path, "w", encoding="utf-8", buffering=1) as f:
@@ -187,7 +187,7 @@ class AppWindow(Gtk.ApplicationWindow):
 
 class DeviceBridge(Gtk.Application):
     def __init__(self, data_dir: str):
-        super().__init__(application_id="USB passthrough manager",
+        super().__init__(application_id="ghaf.device.bridge",
                          flags=Gio.ApplicationFlags.FLAGS_NONE)
         self._data_dir = data_dir
         self._win: Optional[AppWindow] = None

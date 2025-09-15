@@ -85,9 +85,9 @@ let
           ];
           allow = [
               {
-                  vendorId = "0781";
-                  productId = "5595";
-                  description = "Storage";
+                  vendorId = "0c45";
+                  productId = "6366";
+                  description = "Arduino USB Camera";
               }
           ];
         }
