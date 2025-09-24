@@ -17,7 +17,7 @@ in
         };
       };
       hardware.usb.vhotplug.upmclient.enable = true;
-      hardware.usb.vhotplug.upmclient.server_cid = config.ghaf.networking.hosts."gui-vm".cid;
+      hardware.usb.vhotplug.upmclient.server_cid = 2; #config.ghaf.networking.hosts."gui-vm".cid;
       # Enable shared directories for the selected VMs
       virtualization.microvm-host.sharedVmDirectory.vms = [
         "business-vm"

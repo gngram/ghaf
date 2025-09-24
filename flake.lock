@@ -234,18 +234,14 @@
         ]
       },
       "locked": {
-        "lastModified": 1758173325,
-        "narHash": "sha256-DvP5nrZhmwtqNifG5QceBrfH0+gxn0lOLihN9LvAGNo=",
-        "owner": "tiiuae",
-        "repo": "ghafpkgs",
-        "rev": "9385aeb11fb8fd398b6147425199cabfa81a9903",
-        "type": "github"
+        "lastModified": 1758266761,
+        "narHash": "sha256-uTUGulqxGmsI9H4AzsTJyv8ZbGf3A/8obIDcYzynolk=",
+        "path": "/work/repositories/gngram/ghafpkgs",
+        "type": "path"
       },
       "original": {
-        "owner": "tiiuae",
-        "repo": "ghafpkgs",
-        "rev": "9385aeb11fb8fd398b6147425199cabfa81a9903",
-        "type": "github"
+        "path": "/work/repositories/gngram/ghafpkgs",
+        "type": "path"
       }
     },
     "git-hooks-nix": {
