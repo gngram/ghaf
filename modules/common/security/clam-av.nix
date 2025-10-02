@@ -113,10 +113,11 @@ in {
       enable = mkEnableOption "On-access scanning using clamonacc (fanotify)";
       removeInfected = mkEnableOption "Remove infected files";
       quarantine = mkEnableOption "Quarantine infected files";
+      watchHome = mkEnableOption "Watch home";
       includePaths = mkOption {
         type = types.listOf types.str;
         default = [];
-        example = [ "/home" ];
+        example = [ "/etc" ];
         description = "Directories to watch/scan on access.";
       };
       excludePaths = mkOption {
@@ -184,10 +185,12 @@ in {
       systemd.services.clamonacc = {
         enable = true;
         description = "ClamAV On-Access Scanner (fanotify)";
-        after = [ "clamav-daemon.service" "systemd-homed-activate.service"];
+        after = [ "clamav-daemon.service" "user@${builtins.toString config.ghaf.users.loginUser.uid}.service"];
         #requires = [ "clamav-daemon.service" ];
         wantedBy = [ "multi-user.target" ];
         serviceConfig = {
+          StandardOutput = "journal";
+          StandardError = "journal";
           Type = "simple";
           ExecStart = concatStringsSep " " ([
             "${pkgs.clamav}/bin/clamonacc"
@@ -196,7 +199,7 @@ in {
             "--log=/var/log/clamav/clamonacc.log"
             "--fdpass"
             "--config-file=${clamdconf}"
-            "--watch-list=/etc/clamav/watch.list"
+            "--watch-list=/run/clamav/clamonacc.watch"
             "--exclude-list=/etc/clamav/exclude.list"
 
           ] ++
@@ -209,6 +212,18 @@ in {
           Restart = "on-failure";
           RestartSec = "2s";
         };
+         preStart = ''
+	    if [ -f /run/clamav/clamonacc.watch ]; then
+              echo "Removinggggggggggggggggggg"
+              rm /run/clamav/clamonacc.watch
+              echo PPPPPPPPPPPPPPPPPPPP
+            fi
+             echo CCCCCPPPPPPPPPPPPPPPPPPPP
+            cp /etc/clamav/watch.list /run/clamav/clamonacc.watch
+            sleep 10
+            echo CCCCCPPPPPPPPPPPPPPPPPPPPWWWWWWWWW
+            find /home -maxdepth 2 -type d >> /run/clamav/clamonacc.watch
+	  '';
       };
       environment.etc = {
         "clamav/watch.list" = {
@@ -218,6 +233,34 @@ in {
           text = lib.concatStringsSep "\n" (cfg.onAccessScanning.excludePaths ++ [""]);
         };
       };
+     /*
+     systemd.services.clamonacc-reload = mkIf (cfg.onAccessScanning.watchHome) {
+        description = "Reload clamonaccess service";
+        serviceConfig = {
+	  type = "oneshot";
+	  ExecStart = "${pkgs.systemd}/bin/systemctl restart clamonacc.service"; 
+	};
+          preStart = ''
+	    if [ -f /run/clamav/clamonacc.watch ]; then
+              rm /run/clamav/clamonacc.watch 
+            fi
+            cp /etc/clamav/watch.list /run/clamav/clamonacc.watch
+            sleep 10
+            find /home -maxdepth 2 -type d >> /run/clamav/clamonacc.watch
+	  '';
+     };
+     systemd.paths.clamonacc-reload = mkIf (cfg.onAccessScanning.watchHome) {
+	wantedBy = ["multi-user.target"];
+        pathConfig = {
+	  pathChanged = "/home";
+          DirectoryNotEmpty = "/home";
+          PathExistsGlob = "/home";
+          #Unit = "clamonacc-reload";
+        TriggerLimitIntervalSec = 10;
+	TriggerLimitBurst = 2;
+	};
+     };
+   */
     })
 
   ]);

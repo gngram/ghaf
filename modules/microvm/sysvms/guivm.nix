@@ -58,7 +58,10 @@ let
             security.clamav.updaters.freshclam.enable = true;
             security.clamav.scanDirectories = [ "/home" ];
             security.clamav.onAccessScanning.enable = true;
-            security.clamav.onAccessScanning.includePaths = [ "/home" "/home/ganga"];
+            security.clamav.onAccessScanning.watchHome = true;
+            security.clamav.onAccessScanning.includePaths = [
+              "/etc"
+            ];
             security.clamav.onAccessScanning.quarantine = true;
 
             #TODO: fix this
