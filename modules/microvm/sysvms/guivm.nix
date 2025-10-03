@@ -202,7 +202,7 @@ let
                 Restart = "always";
                 RestartSec = "1";
 
-                ExecStart = "${pkgs.usb-passthrough-manager}/bin/upm_server --loglevel debug --cid 2";
+                ExecStart = "${pkgs.usb-passthrough-manager}/bin/upm_client --loglevel debug";
               };
               startLimitIntervalSec = 0;
             };

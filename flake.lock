@@ -234,17 +234,14 @@
         ]
       },
       "locked": {
-        "lastModified": 1759236702,
-        "narHash": "sha256-uKiTdKBWFDv0ea26D2znWeGYhavGX/RiSJZ22iKWv1E=",
-        "owner": "tiiuae",
-        "repo": "ghafpkgs",
-        "rev": "fb984db0c6644f7a4f33903c110c8f8286eeef53",
-        "type": "github"
+        "lastModified": 1759471806,
+        "narHash": "sha256-2spJJG0FuO3sgdxVcsQ0rvhJegVK9qqBz8FCIcj7N/w=",
+        "path": "/persist/storagevm/ghaf/ghafpkgs",
+        "type": "path"
       },
       "original": {
-        "owner": "tiiuae",
-        "repo": "ghafpkgs",
-        "type": "github"
+        "path": "/persist/storagevm/ghaf/ghafpkgs",
+        "type": "path"
       }
     },
     "git-hooks-nix": {
