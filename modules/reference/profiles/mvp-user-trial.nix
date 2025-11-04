@@ -34,7 +34,7 @@ in
           business.enable = true;
         };
       };
-
+      virtualization.storagevm-encryption.enable = true;
       hardware.passthrough = {
         mode = "dynamic";
         VMs = {
