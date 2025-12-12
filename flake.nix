@@ -105,7 +105,7 @@
 
     # Ghaf Inter VM communication and control library
     givc = {
-      url = "github:tiiuae/ghaf-givc";
+      url = "/work/repositories/gngram/ghaf-givc";
       inputs = {
         nixpkgs.follows = "nixpkgs";
         flake-parts.follows = "flake-parts";
