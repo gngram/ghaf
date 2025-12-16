@@ -301,6 +301,12 @@ in
               "! -o tun0 -p udp -m multiport --dports 80,443 -j nixos-fw-log-refuse"
             ];
           };
+        
+        givc.appvm.policy-rules = {
+          "ghaf.pac" = {
+            action = "${pkgs.rsync}/bin/rsync -a {target} /etc/proxy/";
+          };
+        };
         # Enable Proxy Auto-Configuration service for the browser
         ghaf.reference.services = {
           pac = {

@@ -25,11 +25,11 @@ in
       tls.enable = config.ghaf.givc.enableTls;
       policy = {
         url = "http://github.com/gngram/policy-store.git";
-        rev = "fb72918b7f4b919630703f281592d699e15cc9e5";
-        sha256 = "sha256-fe2j48OB4yRS5mSbGNuil04O6YxSVlWEhS/Vl+S5DaE=";
+        rev = "77f54de54ef8640abb079bf60e5468d9694d850d";
+        sha256 = "sha256-uStBhfEPwKXClqEeILzECqLrpCG/M/OG+RejZ5U+yvQ=";
         opa.enable = true;
         updater.enable = true;
-        updater.ref = "test_policy";
+        updater.ref = "deploy";
       };
     };
     ghaf.security.audit.extraRules = [

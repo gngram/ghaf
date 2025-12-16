@@ -131,6 +131,7 @@ in
           };
         };
 
+        /*
         ghafPacFileFetcher = {
           description = "Fetch ghaf pac file periodically with retries if internet is available";
           serviceConfig = {
@@ -145,6 +146,7 @@ in
 
           };
         };
+        */
       };
     };
     systemd.timers.ghafPacFileFetcher = {
