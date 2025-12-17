@@ -302,9 +302,12 @@ in
             ];
           };
         
-        givc.appvm.policy-rules = {
-          "ghaf.pac" = {
-            action = "${pkgs.rsync}/bin/rsync -a {target} /etc/proxy/";
+        givc.appvm.policyAgent = {
+          enable = true;
+          policyConfig = {
+            "ghaf.pac" = {
+              action = "${pkgs.rsync}/bin/rsync -a {target} /etc/proxy/";
+            };
           };
         };
         # Enable Proxy Auto-Configuration service for the browser
