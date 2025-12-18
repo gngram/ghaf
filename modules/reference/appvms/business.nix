@@ -301,7 +301,7 @@ in
               "! -o tun0 -p udp -m multiport --dports 80,443 -j nixos-fw-log-refuse"
             ];
           };
-        
+
         givc.appvm.policyAgent = {
           enable = true;
           policyConfig = {
@@ -310,12 +310,32 @@ in
             };
           };
         };
+
+        ghaf.storagevm = {
+          directories = [
+              {
+                directory = "/etc/policies";
+                user = config.ghaf.users.appUser.name;
+                group = config.ghaf.users.appUser.name;
+                mode = "0774";
+              }
+              {
+                directory = "/etc/proxy";
+                user = config.ghaf.users.appUser.name;
+                group = config.ghaf.users.appUser.name;
+                mode = "0774";
+              }
+            ];
+        };
         # Enable Proxy Auto-Configuration service for the browser
         ghaf.reference.services = {
           pac = {
             enable = true;
-            proxyAddress = config.ghaf.reference.services.proxy-server.internalAddress;
-            proxyPort = config.ghaf.reference.services.proxy-server.bindPort;
+            pacFileFetcher = {
+              enable = false;
+              proxyAddress = config.ghaf.reference.services.proxy-server.internalAddress;
+              proxyPort = config.ghaf.reference.services.proxy-server.bindPort;
+            };
           };
 
           # Enable WireGuard GUI

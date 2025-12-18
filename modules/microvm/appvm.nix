@@ -91,15 +91,7 @@ let
                 storagevm = {
                   enable = true;
                   name = vmName;
-                  directories = [
-                      {
-                        directory = "/etc/policies";
-                        user = config.ghaf.users.appUser.name;
-                        group = config.ghaf.users.appUser.name;
-                        mode = "0755";
-                      }
-                    ]
-                    ++ lib.optionals
+                  directories = lib.optionals
                       (!lib.hasAttr config.ghaf.users.appUser.name config.ghaf.storagevm.users)
                       [
                         # By default, persist appuser's entire home directory unless overwritten by defining

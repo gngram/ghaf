@@ -456,14 +456,16 @@
         ]
       },
       "locked": {
-        "lastModified": 1765980382,
-        "narHash": "sha256-N27jFs+dwp7apMGWdm9AblOfp8Tez/HlnCQ7xEo1WuE=",
-        "path": "/work/repositories/gngram/ghaf-givc",
-        "type": "path"
+        "lastModified": 1766126037,
+        "narHash": "sha256-1GNcBeR3YD9y4lBuBhr0YhiJXbDSCtiriaFVMVys8LA=",
+        "rev": "625040d60f9b42beef5146a7e8c70a22b80d3ed8",
+        "revCount": 749,
+        "type": "git",
+        "url": "file:///work/repositories/gngram/ghaf-givc"
       },
       "original": {
-        "path": "/work/repositories/gngram/ghaf-givc",
-        "type": "path"
+        "type": "git",
+        "url": "file:///work/repositories/gngram/ghaf-givc"
       }
     },
     "jetpack-nixos": {

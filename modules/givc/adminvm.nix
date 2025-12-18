@@ -23,14 +23,14 @@ in
       inherit (config.ghaf.givc.adminConfig) addresses;
       services = map (host: "givc-${host}.service") systemHosts;
       tls.enable = config.ghaf.givc.enableTls;
-      policyServer = {
+      policyAdmin = {
         enable = true;
-        url = "http://github.com/gngram/policy-store.git";
+        url = "https://github.com/gngram/policy-store.git";
         rev = "77f54de54ef8640abb079bf60e5468d9694d850d";
         sha256 = "sha256-uStBhfEPwKXClqEeILzECqLrpCG/M/OG+RejZ5U+yvQ=";
         opa.enable = true;
-        updater.enable = true;
-        updater.ref = "deploy";
+        monitor.enable = true;
+        monitor.ref = "deploy";
       };
     };
     ghaf.security.audit.extraRules = [
