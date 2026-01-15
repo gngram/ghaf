@@ -106,7 +106,7 @@
 
     # Ghaf Inter VM communication and control library
     givc = {
-      url = "github:gngram/ghaf-givc/policy-management-meta";
+      url = "github:gngram/ghaf-givc/default_policies_and_nixos_test";
       inputs = {
         nixpkgs.follows = "nixpkgs";
         flake-parts.follows = "flake-parts";

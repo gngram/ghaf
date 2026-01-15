@@ -41,11 +41,11 @@
     },
     "crane": {
       "locked": {
-        "lastModified": 1762189950,
-        "narHash": "sha256-aotggLUXjlDGqKWibGPQcMZJGgdr79S21ISrv1Wz6RI=",
+        "lastModified": 1766774972,
+        "narHash": "sha256-8qxEFpj4dVmIuPn9j9z6NTbU+hrcGjBOvaxTzre5HmM=",
         "owner": "ipetkov",
         "repo": "crane",
-        "rev": "50700219af884287ad7c85507e2f163b23a027a9",
+        "rev": "01bc1d404a51a0a07e9d8759cd50a7903e218c82",
         "type": "github"
       },
       "original": {
@@ -361,16 +361,16 @@
         ]
       },
       "locked": {
-        "lastModified": 1766132422,
-        "narHash": "sha256-DPDWVhNK7NROmaRoxvLVaFDhmsSfxlsY3YV+cUvA8fU=",
+        "lastModified": 1768484259,
+        "narHash": "sha256-17DBWm/8zVchcoH20Se/08EPoUU0dg9rh7qpDoIbuqg=",
         "owner": "gngram",
         "repo": "ghaf-givc",
-        "rev": "717e9b6d3f8daf96094ccda9df69712768fcb00d",
+        "rev": "a08463bda0dde70149e675d0aef2e2651d4846a5",
         "type": "github"
       },
       "original": {
         "owner": "gngram",
-        "ref": "policy-management-meta",
+        "ref": "default_policies_and_nixos_test",
         "repo": "ghaf-givc",
         "type": "github"
       }

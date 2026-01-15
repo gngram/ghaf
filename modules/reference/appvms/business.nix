@@ -271,16 +271,6 @@ in
           };
         };
 
-        ghaf.storagevm = {
-          directories = [
-              {
-                directory = "/etc/policies";
-                user = config.ghaf.users.appUser.name;
-                group = config.ghaf.users.appUser.name;
-                mode = "0774";
-              }
-            ];
-        };
         # Enable Proxy Auto-Configuration service for the browser
         ghaf.reference.services = {
           pac = {

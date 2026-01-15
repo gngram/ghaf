@@ -90,8 +90,8 @@ let
                 storagevm = {
                   enable = true;
                   name = vmName;
-                  directories = lib.optionals
-                      (!lib.hasAttr config.ghaf.users.appUser.name config.ghaf.storagevm.users)
+                  directories =
+                    lib.optionals (!lib.hasAttr config.ghaf.users.appUser.name config.ghaf.storagevm.users)
                       [
                         # By default, persist appuser's entire home directory unless overwritten by defining
                         # either storagevm.users.<user>.directories and/or .files explicitly in an appvm.

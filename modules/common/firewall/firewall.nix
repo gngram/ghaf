@@ -24,6 +24,7 @@ let
   blackListName = "BLACKLIST";
   blacklistMarkNum = "8";
   cfg = config.ghaf.firewall;
+  rulesFile = "/etc/firewall/rules/fw.nft";
 
   blacklistRuleType = types.listOf (
     types.submodule {
@@ -264,9 +265,18 @@ in
       description = "Extra firewall rules";
     };
     filter-arp = mkEnableOption "static ARP and MAC/IP rules";
+    updater = {
+      enable = mkEnableOption "live update firewall rules";
+    };
   };
 
   config = mkIf cfg.enable {
+    assertions = [
+      {
+        assertion = !(cfg.updater.enable && !config.givc.appvm.policyAdmin.enable);
+        message = "Policy Admin must be enabled to update firewall rules.";
+      }
+    ];
 
     # Include required kernel modules for firewall
     ghaf.firewall.kernel-modules.enable = true;
@@ -479,6 +489,29 @@ in
       }
       cfg.extraOptions
     ];
+
+    givc.appvm.policyAdmin.policyConfig."firewall-rules" = mkIf cfg.updater.enable {
+      targetDir = "/etc/firewall/rules";
+      bind = true;
+    };
+    systemd = mkIf cfg.updater.enable {
+      paths.update-firewall-rules = {
+        wantedBy = [ "multi-user.target" ];
+        pathConfig = {
+          PathModified = "${rulesFile}";
+          PathExists = "${rulesFile}";
+        };
+      };
+      services.update-firewall-rules = {
+        description = "Apply custom firewall rules";
+        serviceConfig = {
+          Type = "oneshot";
+          ExecStart = pkgs.writeShellScript "apply-nftables" ''
+            ${pkgs.nftables}/bin/nft -f ${rulesFile}
+          '';
+        };
+      };
+    };
 
   };
 }
