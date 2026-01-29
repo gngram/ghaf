@@ -8,7 +8,9 @@
 let
   audioCfg = config.ghaf.services.audio;
   cfg = config.ghaf.givc.audiovm;
+  policycfg = config.ghaf.givc.policyClient;
   inherit (lib)
+    mapAttrs
     mkEnableOption
     mkIf
     optionals
@@ -23,6 +25,12 @@ in
   };
 
   config = mkIf (cfg.enable && config.ghaf.givc.enable) {
+    assertions = [
+      {
+        assertion = !config.ghaf.givc.policyAdmin.enable;
+        message = "Policy admin cannot be enabled in audiovm.";
+      }
+    ];
     # Configure audiovm service
     givc.sysvm = {
       enable = true;
@@ -74,6 +82,11 @@ in
           device = "mouse";
         }
       ];
+      policyClient = mkIf policycfg.enable {
+        enable = true;
+        inherit (policycfg) storePath;
+        policyConfig = mapAttrs (_name: value: value.dest) policycfg.policies;
+      };
     };
     givc.dbusproxy = {
       enable = true;

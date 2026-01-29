@@ -14,6 +14,7 @@ let
     types
     optionalString
     ;
+
   addressSubmodule = types.submodule {
     options = {
       name = mkOption {
@@ -90,7 +91,6 @@ in
   };
 
   config = mkIf cfg.enable {
-
     assertions = [
       {
         assertion = cfg.debug -> (!config.ghaf.logging.enable);

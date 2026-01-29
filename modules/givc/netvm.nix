@@ -7,7 +7,9 @@
 }:
 let
   cfg = config.ghaf.givc.netvm;
+  policycfg = config.ghaf.givc.policyClient;
   inherit (lib)
+    mapAttrs
     mkEnableOption
     mkIf
     optionals
@@ -22,6 +24,13 @@ in
   };
 
   config = mkIf (cfg.enable && config.ghaf.givc.enable) {
+    assertions = [
+      {
+        assertion = !config.ghaf.givc.policyAdmin.enable;
+        message = "Policy admin cannot be enabled in netvm.";
+      }
+    ];
+
     # Configure netvm service
     givc.sysvm = {
       enable = true;
@@ -61,6 +70,11 @@ in
           socket = "/tmp/dbusproxy_net.sock";
         }
       ];
+      policyClient = mkIf policycfg.enable {
+        enable = true;
+        inherit (policycfg) storePath;
+        policyConfig = mapAttrs (_name: value: value.dest) policycfg.policies;
+      };
     };
     givc.dbusproxy = {
       enable = true;

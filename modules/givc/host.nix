@@ -7,7 +7,9 @@
 }:
 let
   cfg = config.ghaf.givc.host;
+  policycfg = config.ghaf.givc.policyClient;
   inherit (lib)
+    mapAttrs
     mkEnableOption
     mkIf
     optionalString
@@ -23,9 +25,15 @@ in
   };
 
   config = mkIf (cfg.enable && config.ghaf.givc.enable) {
-    # Configure host service
+    assertions = [
+      {
+        assertion = !config.ghaf.givc.policyAdmin.enable;
+        message = "Policy admin cannot be enabled in host.";
+      }
+    ];
     givc.host = {
       enable = true;
+
       inherit (config.ghaf.givc) debug;
       transport = {
         name = hostName;
@@ -51,6 +59,11 @@ in
       tls.enable = config.ghaf.givc.enableTls;
       admin = lib.head config.ghaf.givc.adminConfig.addresses;
       enableExecModule = true;
+      policyClient = mkIf policycfg.enable {
+        enable = true;
+        inherit (policycfg) storePath;
+        policyConfig = mapAttrs (_name: value: value.dest) policycfg.policies;
+      };
     };
 
     givc.tls = {

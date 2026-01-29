@@ -9,7 +9,9 @@
 let
   audioCfg = config.ghaf.services.audio;
   cfg = config.ghaf.givc.guivm;
+  policycfg = config.ghaf.givc.policyClient;
   inherit (lib)
+    mapAttrs
     mkEnableOption
     mkIf
     ;
@@ -25,6 +27,13 @@ in
   };
 
   config = mkIf (cfg.enable && config.ghaf.givc.enable) {
+    assertions = [
+      {
+        assertion = !config.ghaf.givc.policyAdmin.enable;
+        message = "Policy admin cannot be enabled in guivm.";
+      }
+    ];
+
     # Configure guivm service
     givc.sysvm = {
       enable = true;
@@ -85,6 +94,11 @@ in
           producer = false;
         }
       ];
+      policyClient = mkIf policycfg.enable {
+        enable = true;
+        inherit (policycfg) storePath;
+        policyConfig = mapAttrs (_name: value: value.dest) policycfg.policies;
+      };
     };
     systemd.services.dbus-proxy-networkmanager = {
       description = "DBus proxy for Network Manager ${guivmName}";
