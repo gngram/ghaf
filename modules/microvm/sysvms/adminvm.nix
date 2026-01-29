@@ -10,6 +10,7 @@ let
 
   configHost = config;
   vmName = "admin-vm";
+  policyDir = "/etc/admin-policies";
 
   adminvmBaseConfiguration = {
     imports = [
@@ -21,6 +22,7 @@ let
       (
         { lib, ... }:
         {
+          _module.args.configHost = configHost;
           ghaf = {
             # Profiles
             profiles.debug.enable = lib.mkDefault configHost.ghaf.profiles.debug.enable;
@@ -46,6 +48,9 @@ let
               withHardenedConfigs = true;
             };
             givc.adminvm.enable = true;
+            givc.policyAdmin.enable = true;
+            givc.policyAdmin.storePath = policyDir;
+            givc.policyAdmin.updater.perPolicy.enable = true;
 
             # Enable dynamic hostname export for VMs
             identity.vmHostNameExport.enable = true;
@@ -58,7 +63,10 @@ let
                 "/etc/locale-givc.conf"
                 "/etc/timezone.conf"
               ];
-              directories = lib.mkIf configHost.ghaf.virtualization.storagevm-encryption.enable [
+              directories = [
+                policyDir
+              ]
+              ++ lib.optionals configHost.ghaf.virtualization.storagevm-encryption.enable [
                 "/var/lib/swtpm"
               ];
               encryption.enable = configHost.ghaf.virtualization.storagevm-encryption.enable;

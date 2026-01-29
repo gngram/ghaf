@@ -14,8 +14,8 @@ let
   pacServerAddr = "127.0.0.1:8000";
   _ghafPacFileFetcher =
     let
-      pacFileDownloadUrl = cfg.pacUrl;
-      proxyServerUrl = "http://${cfg.proxyAddress}:${toString cfg.proxyPort}";
+      pacFileDownloadUrl = cfg.pacFileFetcher.pacUrl;
+      proxyServerUrl = "http://${cfg.pacFileFetcher.proxyAddress}:${toString cfg.pacFileFetcher.proxyPort}";
       logTag = "ghaf-pac-fetcher";
     in
     pkgs.writeShellApplication {
@@ -95,6 +95,25 @@ in
       default = "http://${pacServerAddr}/${pacFileName}";
       readOnly = true;
     };
+
+    pacFileFetcher = {
+      enable = lib.mkEnableOption "PAC file fetcher";
+      proxyAddress = lib.mkOption {
+        type = lib.types.str;
+        description = "Proxy address";
+      };
+
+      proxyPort = lib.mkOption {
+        type = lib.types.int;
+        description = "Proxy port";
+      };
+
+      pacUrl = lib.mkOption {
+        type = lib.types.str;
+        description = "URL of the Proxy Auto-Configuration (PAC) file";
+        default = "https://raw.githubusercontent.com/tiiuae/ghaf-rt-config/refs/heads/main/network/proxy/ghaf.pac";
+      };
+    };
   };
 
   config = lib.mkIf cfg.enable {
@@ -109,9 +128,11 @@ in
     };
 
     systemd = {
-      tmpfiles.rules = [
-        "f /etc/proxy/${pacFileName} 0664 ${proxyUserName} ${proxyGroupName} - -"
-      ];
+      tmpfiles = lib.mkIf cfg.pacFileFetcher.enable {
+        rules = [
+          "f /etc/proxy/${pacFileName} 0664 ${proxyUserName} ${proxyGroupName} - -"
+        ];
+      };
 
       services = {
         pacServer = {
@@ -131,7 +152,7 @@ in
           };
         };
 
-        ghafPacFileFetcher = {
+        ghafPacFileFetcher = lib.mkIf cfg.pacFileFetcher.enable {
           description = "Fetch ghaf pac file periodically with retries if internet is available";
           serviceConfig = {
             ExecStart = "${_ghafPacFileFetcher}/bin/ghafPacFileFetcher";
@@ -147,7 +168,7 @@ in
         };
       };
     };
-    systemd.timers.ghafPacFileFetcher = {
+    systemd.timers.ghafPacFileFetcher = lib.mkIf cfg.pacFileFetcher.enable {
       description = "Run ghafPacFileFetcher periodically";
       wantedBy = [ "timers.target" ];
       timerConfig = {
@@ -160,5 +181,16 @@ in
       };
     };
 
+    ghaf.givc.policyClient.policies =
+      lib.mkIf (config.ghaf.givc.policyClient.enable && (!cfg.pacFileFetcher.enable))
+        {
+          "proxy-config" = {
+            dest = "/etc/proxy/ghaf.pac";
+            updater = {
+              url = "https://raw.githubusercontent.com/tiiuae/ghaf-rt-config/refs/heads/main/network/proxy/ghaf.pac";
+              poll_interval_secs = 0; # Poll once on each boot
+            };
+          };
+        };
   };
 }

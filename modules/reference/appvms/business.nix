@@ -14,6 +14,7 @@ let
     getExe
     ;
   enableOpenNormalExtension = true;
+  policyDir = "/etc/policies";
 in
 {
   business = {
@@ -253,12 +254,29 @@ in
               "! -o tun0 -p udp -m multiport --dports 80,443 -j nixos-fw-log-refuse"
             ];
           };
+
+        ghaf.givc.policyClient.enable = true;
+        ghaf.givc.policyClient.storePath = policyDir;
+        ghaf.storagevm = {
+          directories = [
+            {
+              directory = policyDir;
+              user = config.ghaf.users.appUser.name;
+              group = config.ghaf.users.appUser.name;
+              mode = "0774";
+            }
+          ];
+        };
+
         # Enable Proxy Auto-Configuration service for the browser
         ghaf.reference.services = {
           pac = {
             enable = true;
-            proxyAddress = config.ghaf.reference.services.proxy-server.internalAddress;
-            proxyPort = config.ghaf.reference.services.proxy-server.bindPort;
+            pacFileFetcher = {
+              enable = false;
+              proxyAddress = config.ghaf.reference.services.proxy-server.internalAddress;
+              proxyPort = config.ghaf.reference.services.proxy-server.bindPort;
+            };
           };
 
           # Enable WireGuard GUI
