@@ -26,6 +26,7 @@
 }:
 let
   vmName = "audio-vm";
+  vmPolicyClient = hostConfig.microvm.vms."${vmName}".config.config.ghaf.givc.policyClient;
 in
 {
   _file = ./audiovm-base.nix;
@@ -150,7 +151,12 @@ in
     # Networking hosts - from hostConfig (for vm-networking.nix to look up MAC/IP)
     networking.hosts = hostConfig.networking.hosts or { };
     # Common namespace - from hostConfig (previously from commonModule in modules.nix)
-    common = hostConfig.common or { };
+    common = {
+      policies = lib.mkIf vmPolicyClient.enable {
+        "${vmName}" = vmPolicyClient.policies;
+      };
+    }
+    ++ hostConfig.common;
 
     # User configuration - from hostConfig
     users = {

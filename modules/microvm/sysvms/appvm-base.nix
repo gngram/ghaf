@@ -107,6 +107,7 @@ in
 
   config =
     let
+      vms = lib.filterAttrs (_: vm: vm.enable) config.ghaf.virtualization.microvm.appvm;
       # All applications = base (from mkAppVm) + extensions (from ghaf.appvm.applications)
       allApplications = baseApplications ++ config.ghaf.appvm.applications;
 
@@ -136,7 +137,23 @@ in
 
       ghaf = {
         # Common namespace - from hostConfig (for appHosts, systemHosts, etc.)
-        common = hostConfig.common or { };
+        common = {
+          policies = lib.foldr lib.recursiveUpdate { } (
+            lib.mapAttrsToList (
+              name: _value:
+              let
+                vmPolicyClient = config.microvm.vms."${name}-vm".config.config.ghaf.givc.policyClient;
+              in
+              if vmPolicyClient.enable then
+                {
+                  "${name}-vm" = vmPolicyClient.policies;
+                }
+              else
+                { }
+            ) vms
+          );
+        }
+        ++ hostConfig.common;
 
         # GIVC configuration - from globalConfig
         givc = {

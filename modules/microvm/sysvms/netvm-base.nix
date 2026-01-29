@@ -25,6 +25,7 @@
 }:
 let
   vmName = "net-vm";
+  vmPolicyClient = hostConfig.microvm.vms."${vmName}".config.config.ghaf.givc.policyClient;
 in
 {
   _file = ./netvm-base.nix;
@@ -163,7 +164,12 @@ in
     };
 
     # Common namespace - from hostConfig
-    common = hostConfig.common or { };
+    common = {
+      policies = lib.mkIf vmPolicyClient.enable {
+        "${vmName}" = vmPolicyClient.policies;
+      };
+    }
+    ++ hostConfig.common;
 
     # Note: reference.services is NOT set here - it should come via extraModules
     # from hardware.definition.netvm.extraModules if needed

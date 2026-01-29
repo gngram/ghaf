@@ -74,6 +74,7 @@ let
     execPath = app.command;
     inherit (app) icon;
   }) guivmApplications;
+  vmPolicyClient = hostConfig.microvm.vms."${vmName}".config.config.ghaf.givc.policyClient;
 in
 {
   _file = ./guivm-base.nix;
@@ -126,7 +127,13 @@ in
     networking.hosts = hostConfig.networking.hosts or { };
     # Common namespace - from hostConfig
     # Required for killswitch, etc. to access hardware device info
-    common = hostConfig.common or { };
+    common = {
+      policies = lib.mkIf vmPolicyClient.enable {
+        "${vmName}" = vmPolicyClient.policies;
+      };
+    }
+    ++ hostConfig.common;
+
     # Enable dynamic hostname export for VMs
     identity.vmHostNameExport.enable = true;
 
