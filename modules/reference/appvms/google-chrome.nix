@@ -51,6 +51,7 @@
               ${config.ghaf.givc.idsExtraArgs} "$@"
           '';
         };
+        policyDir = "/etc/policies";
       in
       [
         {
@@ -82,8 +83,20 @@
                 firewall = {
                   allowedUDPPorts = config.ghaf.reference.services.chromecast.udpPorts;
                   allowedTCPPorts = config.ghaf.reference.services.chromecast.tcpPorts;
+                  updater.enable = true;
                 };
                 storagevm.maximumSize = 100 * 1024; # 100 GB space for google-chrome-vm
+                givc.policyClient.enable = true;
+                givc.policyClient.storePath = policyDir;
+                storagevm.directories = [
+                  {
+                    directory = policyDir;
+                    user = config.ghaf.users.appUser.name;
+                    group = config.ghaf.users.appUser.name;
+                    mode = "0774";
+                  }
+                ];
+
               };
             }
           ];
