@@ -86,6 +86,7 @@ let
     ];
   };
   cfg = config.ghaf.virtualization.microvm.idsvm;
+  vmPolicyClient = config.microvm.vms."${vmName}".config.config.ghaf.givc.policyClient;
 in
 {
   imports = [
@@ -120,6 +121,9 @@ in
       config = idsvmBaseConfiguration // {
         imports = idsvmBaseConfiguration.imports ++ cfg.extraModules;
       };
+    };
+    ghaf.common.policies = lib.mkIf vmPolicyClient.enable {
+      "${vmName}" = vmPolicyClient.policies;
     };
   };
 }

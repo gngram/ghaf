@@ -169,6 +169,7 @@ let
     ];
   };
   cfg = config.ghaf.virtualization.microvm.audiovm;
+  vmPolicyClient = config.microvm.vms."${vmName}".config.config.ghaf.givc.policyClient;
 in
 {
   options.ghaf.virtualization.microvm.audiovm = {
@@ -199,6 +200,9 @@ in
       config = audiovmBaseConfiguration // {
         imports = audiovmBaseConfiguration.imports ++ cfg.extraModules;
       };
+    };
+    ghaf.common.policies = lib.mkIf vmPolicyClient.enable {
+      "${vmName}" = vmPolicyClient.policies;
     };
   };
 }

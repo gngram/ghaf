@@ -329,6 +329,7 @@ let
   };
 
   cfg = config.ghaf.virtualization.microvm.guivm;
+  vmPolicyClient = config.microvm.vms."${vmName}".config.config.ghaf.givc.policyClient;
 in
 {
   options.ghaf.virtualization.microvm.guivm = {
@@ -388,6 +389,9 @@ in
       config = guivmBaseConfiguration // {
         imports = guivmBaseConfiguration.imports ++ cfg.extraModules;
       };
+    };
+    ghaf.common.policies = lib.mkIf vmPolicyClient.enable {
+      "${vmName}" = vmPolicyClient.policies;
     };
   };
 }

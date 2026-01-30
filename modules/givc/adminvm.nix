@@ -1,7 +1,6 @@
 # SPDX-FileCopyrightText: 2022-2026 TII (SSRC) and the Ghaf contributors
 # SPDX-License-Identifier: Apache-2.0
 {
-  configHost,
   config,
   lib,
   ...
@@ -24,36 +23,19 @@ let
   );
 
   # Create a list of policies from all VMs
-  vmPolicies = flatten (
+  policyList = flatten (
     mapAttrsToList (
-      vmName: vmValue:
-      let
-        vmGivc = vmValue.config.config.ghaf.givc;
-      in
-      if (vmGivc.enable && vmGivc.policyClient.enable) then
+      vmName: vmPoliciesMap:
+      if vmPoliciesMap == { } then
+        [ ]
+      else
         mapAttrsToList (policyName: policyValue: {
           inherit vmName policyName;
           inherit (policyValue.updater) url;
           inherit (policyValue.updater) poll_interval_secs;
-        }) vmGivc.policyClient.policies
-      else
-        [ ]
-    ) configHost.microvm.vms
+        }) vmPoliciesMap
+    ) config.ghaf.common.policies
   );
-
-  # Create a list of policies from host
-  hostPolicies =
-    if (configHost.ghaf.givc.enable && configHost.ghaf.givc.policyClient.enable) then
-      mapAttrsToList (policyName: policyValue: {
-        vmName = "ghaf-host";
-        inherit policyName;
-        inherit (policyValue.updater) url;
-        inherit (policyValue.updater) poll_interval_secs;
-      }) configHost.ghaf.givc.policyClient.policies
-    else
-      [ ];
-
-  allPolicies = vmPolicies ++ hostPolicies;
 
   /*
     Group policies by policy name in a givc compatible set of policies.
@@ -91,7 +73,7 @@ let
         };
       };
     }
-  ) { } allPolicies;
+  ) { } policyList;
 in
 {
   options.ghaf.givc.adminvm = {

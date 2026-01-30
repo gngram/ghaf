@@ -23,51 +23,6 @@ let
     strings
     ;
 
-  updaterSubmodule = types.submodule {
-    options = {
-      url = mkOption {
-        type = types.nullOr types.str;
-        default = null;
-        description = "URL to pull updates for this specific policy.";
-      };
-      poll_interval_secs = mkOption {
-        type = types.int;
-        default = 300;
-        description = "Polling interval in seconds.";
-      };
-    };
-  };
-
-  policyClient = types.submodule {
-    options = {
-      factory = mkOption {
-        type = types.nullOr types.path;
-        default = null;
-        description = "Initial policy file path or nix store path.";
-      };
-      dest = mkOption {
-        type = types.nullOr types.path;
-        description = "Destination file path (must not be null).";
-        default = null;
-      };
-      script = mkOption {
-        type = types.nullOr types.path;
-        default = null;
-        description = "Script to execute after a policy update.";
-      };
-      depends = mkOption {
-        type = types.listOf types.str;
-        default = [ ];
-        description = "Services to restart when this policy file changes.";
-      };
-      updater = mkOption {
-        type = updaterSubmodule;
-        default = { };
-        description = "Update settings specific to this policy.";
-      };
-    };
-  };
-
   # Filter policies that have both factory and dest defined.
   startupPolicies = filterAttrs (_name: p: p.dest != null) cfg.policyClient.policies;
 
@@ -136,7 +91,7 @@ in
         description = "Directory path for policy storage.";
       };
       policies = mkOption {
-        type = types.attrsOf policyClient;
+        type = types.attrsOf types.policy;
         default = { };
         description = "Definition of all managed policies.";
       };

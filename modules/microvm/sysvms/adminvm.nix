@@ -22,7 +22,6 @@ let
       (
         { lib, ... }:
         {
-          _module.args.configHost = configHost;
           ghaf = {
             # Profiles
             profiles.debug.enable = lib.mkDefault configHost.ghaf.profiles.debug.enable;

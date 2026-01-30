@@ -35,6 +35,7 @@ in
         message = "Policy admin cannot be enabled in appvm.";
       }
     ];
+
     # Configure appvm service
     givc.appvm = {
       enable = true;

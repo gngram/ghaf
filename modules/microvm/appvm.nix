@@ -524,6 +524,21 @@ in
         }
       ];
 
+      ghaf.common.policies = lib.foldr lib.recursiveUpdate { } (
+        lib.mapAttrsToList (
+          name: _value:
+          let
+            vmPolicyClient = config.microvm.vms."${name}-vm".config.config.ghaf.givc.policyClient;
+          in
+          if vmPolicyClient.enable then
+            {
+              "${name}-vm" = vmPolicyClient.policies;
+            }
+          else
+            { }
+        ) vms
+      );
+
       ghaf.common.extraNetworking.hosts = lib.mapAttrs' (name: vm: {
         name = "${name}-vm";
         value = vm.extraNetworking or { };

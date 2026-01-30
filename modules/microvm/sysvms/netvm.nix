@@ -175,6 +175,7 @@ let
     ];
   };
   cfg = config.ghaf.virtualization.microvm.netvm;
+  vmPolicyClient = config.microvm.vms."${vmName}".config.config.ghaf.givc.policyClient;
 in
 {
   options.ghaf.virtualization.microvm.netvm = {
@@ -205,6 +206,9 @@ in
       config = netvmBaseConfiguration // {
         imports = netvmBaseConfiguration.imports ++ cfg.extraModules;
       };
+    };
+    ghaf.common.policies = lib.mkIf vmPolicyClient.enable {
+      "${vmName}" = vmPolicyClient.policies;
     };
   };
 
