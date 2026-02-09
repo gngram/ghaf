@@ -25,6 +25,21 @@
 let
   vmName = "admin-vm";
   timezoneEnabled = lib.ghaf.features.isEnabledFor globalConfig "timezone" vmName;
+  # List of VMs that will run spire-agent (token will be created if missing)
+  spireAgentVMs = [
+    "business-vm"
+    "chrome-vm"
+    "comms-vm"
+    "flatpak-vm"
+    "zathura-vm"
+    "audio-vm"
+    "gui-vm"
+    "ghaf-host"
+    "net-vm"
+  ];
+
+  trustDomain = "ghaf.internal";
+  tokenDir = "/etc/common/spire/tokens";
 in
 {
   _file = ./adminvm-base.nix;
@@ -164,6 +179,26 @@ in
     security = {
       fail2ban.enable = globalConfig.development.ssh.daemon.enable or false;
       audit.enable = lib.mkDefault (globalConfig.security.audit.enable or false);
+
+      spiffe = {
+        enable = true;
+        inherit trustDomain;
+        server = {
+          enable = true;
+          inherit spireAgentVMs;
+          inherit tokenDir;
+          createWorkloadEntries = true;
+          workloadEntries = [
+            {
+              name = "workload";
+              selectors = [ "unix:user:ghaf" ];
+            }
+          ];
+          bundleOutPath = "/etc/common/spire/bundle.pem";
+          generateJoinTokens = true;
+          publishBundle = true;
+        };
+      };
     };
 
     services.timezone.enable = lib.mkDefault (
