@@ -135,6 +135,17 @@ in
             ghaf-host = config.ghaf.givc.policyClient.policies;
           };
         };
+        security.spiffe = {
+          enable = true;
+          agent = {
+            enable = true;
+            serverAddress = "192.168.100.5";
+            serverPort = 8081;
+            trustDomain = "ghaf.internal";
+            joinTokenFile = "/persist/common/spire/tokens/${hostName}.token";
+            trustBundlePath = "/persist/common/spire/bundle.pem";
+          };
+        };
       };
 
       # Create required host directories
