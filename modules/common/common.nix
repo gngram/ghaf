@@ -34,6 +34,26 @@ in
 
   options.ghaf = {
     common = {
+      spireAgents = mkOption {
+        description = "Spire agents configuration";
+        default = { };
+        type = types.attrsOf (
+          types.submodule {
+            options = {
+              attestationMode = mkOption {
+                type = types.str;
+                description = "Attestation mode";
+              };
+              workloads = mkOption {
+                type = types.listOf types.spireWorkload;
+                default = [ ];
+                description = "List of workloads";
+              };
+            };
+          }
+        );
+      };
+
       vms = mkOption {
         type = types.listOf types.str;
         default = [ ];

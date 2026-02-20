@@ -15,6 +15,7 @@
 }:
 let
   cfg = config.ghaf.security.spiffe.server;
+  spire-package = config.ghaf.security.spiffe.package;
 
   # tpm_devid requires the enable flag and a valid endorsement CA bundle
   tpmAttestationEffective = cfg.tpmAttestation.enable && cfg.tpmAttestation.endorsementCaBundle != "";
@@ -62,7 +63,7 @@ let
     runtimeInputs = [
       pkgs.coreutils
       pkgs.gawk
-      pkgs.spire
+      spire-package
     ];
     text = ''
       mkdir -p "${cfg.tokenDir}"
@@ -103,7 +104,7 @@ let
     name = "spire-publish-bundle";
     runtimeInputs = [
       pkgs.coreutils
-      pkgs.spire
+      spire-package
     ];
     text = ''
       out="${cfg.bundleOutPath}"
@@ -141,7 +142,7 @@ let
       pkgs.coreutils
       pkgs.gawk
       pkgs.gnugrep
-      pkgs.spire
+      spire-package
     ];
     text = ''
       SOCKET="${cfg.socketPath}"
@@ -374,7 +375,7 @@ in
           Ensure tpm-endorsement.nix is imported in your hardware definition.
         '';
 
-    environment.systemPackages = [ pkgs.spire ];
+    environment.systemPackages = [ spire-package ];
 
     users.groups.spire = { };
     users.users.spire = {
@@ -402,7 +403,7 @@ in
         User = "spire";
         Group = "spire";
 
-        ExecStart = "${pkgs.spire}/bin/spire-server run -config /etc/spire/server.conf";
+        ExecStart = "${spire-package}/bin/spire-server run -config /etc/spire/server.conf";
 
         StateDirectory = "spire/server";
         StateDirectoryMode = "0750";

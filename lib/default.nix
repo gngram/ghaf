@@ -185,6 +185,18 @@ in
       };
       # keep-sorted end
     };
+    spireWorkload = lib.types.submodule {
+      options = {
+        name = lib.mkOption {
+          type = lib.types.str;
+          description = "Name of workload";
+        };
+        selectors = lib.mkOption {
+          type = lib.types.listOf lib.types.str;
+          description = "Selector of the workload";
+        };
+      };
+    };
   };
 
   # Launcher utilities (remove desktop entries from packages)

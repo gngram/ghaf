@@ -6,7 +6,12 @@
 # Imports server, agent, and TPM DevID modules.
 # Propagates shared options (trustDomain) to sub-modules.
 #
-{ config, lib, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 let
   cfg = config.ghaf.security.spiffe;
 in
@@ -29,6 +34,13 @@ in
       type = lib.types.str;
       default = "ghaf.internal";
       description = "SPIFFE trust domain used by SPIRE";
+    };
+
+    package = lib.mkOption {
+      type = lib.types.package;
+      default = pkgs.spire-mini;
+      example = lib.literalExpression "pkgs.spire";
+      description = "Spire package to use.";
     };
   };
 

@@ -12,16 +12,15 @@
 {
   config,
   lib,
-  pkgs,
   ...
 }:
 let
   cfg = config.ghaf.security.spiffe.agent;
+  spire-package = config.ghaf.security.spiffe.package;
 
-  useTpmDevid = cfg.attestationMode == "tpm_devid";
+  useTpmDevid = cfg.attestationMode.tpmDevid.enable;
 
-  # Common agent config (shared between tpm_devid and join_token modes)
-  agentConfCommon = ''
+  agentConf = ''
     agent {
       data_dir = "${cfg.dataDir}"
       log_level = "${cfg.logLevel}"
@@ -30,19 +29,26 @@ let
       trust_domain = "${cfg.trustDomain}"
       trust_bundle_path = "${cfg.trustBundlePath}"
       socket_path = "${cfg.socketPath}"
-  '';
-
-  agentConfTpmDevid = agentConfCommon + ''
+      ${lib.optionalString cfg.attestationMode.joinToken.enable ''
+        join_token_file = "${cfg.attestationMode.joinToken.joinTokenFile}"
+      ''}
     }
 
     plugins {
-      NodeAttestor "tpm_devid" {
-        plugin_data {
-          devid_cert_path = "${cfg.tpmDevid.certPath}"
-          devid_priv_path = "${cfg.tpmDevid.privPath}"
-          devid_pub_path = "${cfg.tpmDevid.pubPath}"
+      ${lib.optionalString cfg.attestationMode.joinToken.enable ''
+        NodeAttestor "join_token" {
+          plugin_data {}
         }
-      }
+      ''}
+      ${lib.optionalString cfg.attestationMode.tpmDevid.enable ''
+        NodeAttestor "tpm_devid" {
+          plugin_data {
+            devid_cert_path = "${cfg.attestationMode.tpmDevid.certPath}"
+            devid_priv_path = "${cfg.attestationMode.tpmDevid.privPath}"
+            devid_pub_path = "${cfg.attestationMode.tpmDevid.pubPath}"
+          }
+        }
+      ''}
 
       WorkloadAttestor "unix" {
         plugin_data {}
@@ -54,46 +60,6 @@ let
         }
       }
     }
-  '';
-
-  agentConfJoinToken = agentConfCommon + ''
-    join_token_file = "${cfg.joinTokenFile}"
-    }
-
-    plugins {
-      NodeAttestor "join_token" {
-        plugin_data {}
-      }
-
-      WorkloadAttestor "unix" {
-        plugin_data {}
-      }
-
-      KeyManager "disk" {
-        plugin_data {
-          directory = "${cfg.dataDir}/keys"
-        }
-      }
-    }
-  '';
-
-  # For tpm_devid mode, generate both configs and select at runtime
-
-  # Runtime config selector: checks if DevID files exist, falls back to join_token
-  agentConfSelector = pkgs.writeShellScript "spire-agent-select-config" ''
-    if [ "${toString useTpmDevid}" = "1" ]; then
-      if [ -f "${cfg.tpmDevid.certPath}" ] && \
-         [ -f "${cfg.tpmDevid.privPath}" ] && \
-         [ -f "${cfg.tpmDevid.pubPath}" ]; then
-        echo "DevID files found, using tpm_devid attestation"
-        ln -sf /etc/spire/agent-tpm-devid.conf /run/spire/agent.conf
-      else
-        echo "DevID files not found, falling back to join_token attestation"
-        ln -sf /etc/spire/agent-join-token.conf /run/spire/agent.conf
-      fi
-    else
-      ln -sf /etc/spire/agent-join-token.conf /run/spire/agent.conf
-    fi
   '';
 in
 {
@@ -138,43 +104,10 @@ in
       description = "Path to the SPIRE trust bundle PEM file";
     };
 
-    joinTokenFile = lib.mkOption {
-      type = lib.types.str;
-      default = "/etc/common/spire/tokens/agent.token";
-      description = "Path to a file containing a join token";
-    };
-
     socketPath = lib.mkOption {
       type = lib.types.str;
       default = "/run/spire/agent.sock";
       description = "SPIRE Agent API socket path";
-    };
-
-    attestationMode = lib.mkOption {
-      type = lib.types.enum [
-        "join_token"
-        "tpm_devid"
-      ];
-      default = "join_token";
-      description = "Node attestation mode: join_token (app VMs) or tpm_devid (system VMs with TPM)";
-    };
-
-    tpmDevid = {
-      certPath = lib.mkOption {
-        type = lib.types.str;
-        default = "/var/lib/spire/devid/devid.pem";
-        description = "Path to the DevID certificate";
-      };
-      privPath = lib.mkOption {
-        type = lib.types.str;
-        default = "/var/lib/spire/devid/devid.priv";
-        description = "Path to the DevID TPM private blob";
-      };
-      pubPath = lib.mkOption {
-        type = lib.types.str;
-        default = "/var/lib/spire/devid/devid.pub";
-        description = "Path to the DevID TPM public blob";
-      };
     };
 
     workloadApiGroup = lib.mkOption {
@@ -188,10 +121,40 @@ in
       default = [ "ghaf" ];
       description = "Users added to workloadApiGroup for SPIRE Workload API access";
     };
+
+    attestationMode = {
+      joinToken = {
+        enable = lib.mkEnableOption "Join token attestation";
+        joinTokenFile = lib.mkOption {
+          type = lib.types.str;
+          default = "/etc/common/spire/tokens/agent.token";
+          description = "Path to a file containing a join token";
+        };
+      };
+      tpmDevid = {
+        enable = lib.mkEnableOption "TPM DevID attestation";
+        certPath = lib.mkOption {
+          type = lib.types.str;
+          default = "/var/lib/spire/devid/devid.pem";
+          description = "Path to the DevID certificate";
+        };
+        privPath = lib.mkOption {
+          type = lib.types.str;
+          default = "/var/lib/spire/devid/devid.priv";
+          description = "Path to the DevID TPM private blob";
+        };
+        pubPath = lib.mkOption {
+          type = lib.types.str;
+          default = "/var/lib/spire/devid/devid.pub";
+          description = "Path to the DevID TPM public blob";
+        };
+      };
+    };
+
   };
 
   config = lib.mkIf cfg.enable {
-    environment.systemPackages = [ pkgs.spire ];
+    environment.systemPackages = [ spire-package ];
 
     users.groups = {
       spire = { };
@@ -211,10 +174,7 @@ in
       extraGroups = lib.mkAfter [ cfg.workloadApiGroup ];
     }));
 
-    environment.etc."spire/agent-join-token.conf".text = agentConfJoinToken;
-    environment.etc."spire/agent-tpm-devid.conf" = lib.mkIf useTpmDevid {
-      text = agentConfTpmDevid;
-    };
+    environment.etc."spire/agent.conf".text = agentConf;
 
     # Own /run/spire via tmpfiles with group access for spiffe users
     systemd.tmpfiles.rules = [
@@ -259,8 +219,7 @@ in
           config.security.tpm2.tssGroup or "tss"
         ];
 
-        ExecStartPre = "+${agentConfSelector}";
-        ExecStart = "${pkgs.spire}/bin/spire-agent run -config /run/spire/agent.conf";
+        ExecStart = "${spire-package}/bin/spire-agent run -config /etc/spire/agent.conf";
 
         StateDirectory = "spire/agent";
         StateDirectoryMode = "0750";
