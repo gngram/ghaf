@@ -76,6 +76,11 @@ rec {
         debug = mkEnableOption "GIVC debug mode";
       };
 
+      spire = {
+        enable = mkEnableOption "SPIFFE SPIRE globally";
+        debug = mkEnableOption "SPIRE debug logs";
+      };
+
       storage = {
         encryption.enable = mkEnableOption "storage encryption globally";
         storeOnDisk = mkEnableOption "storing VM nix stores on disk rather than virtiofs";
@@ -334,6 +339,11 @@ rec {
         debug = false;
       };
 
+      spire = {
+        enable = true;
+        debug = true;
+      };
+
       storage = {
         encryption.enable = false;
         storeOnDisk = false;
@@ -425,6 +435,11 @@ rec {
         debug = false;
       };
 
+      spire = {
+        enable = true;
+        debug = false;
+      };
+
       storage = {
         encryption.enable = true;
         storeOnDisk = false;
@@ -510,6 +525,11 @@ rec {
 
       givc = {
         enable = false;
+        debug = false;
+      };
+
+      spire = {
+        enable = true;
         debug = false;
       };
 
