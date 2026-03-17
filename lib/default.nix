@@ -226,6 +226,27 @@ in
       };
       # keep-sorted end
     };
+
+    spireWorkloads = lib.types.listOf (
+      lib.types.submodule {
+        options = {
+          name = lib.mkOption {
+            type = lib.types.str;
+            description = "Name of workload";
+          };
+          selectors = lib.mkOption {
+            type = lib.types.listOf lib.types.str;
+            description = "Selector of the workload";
+          };
+        };
+      }
+    );
+
+    spireNodeAttestationMode = lib.types.enum [
+      # Add new modes here
+      "join_token"
+    ];
+
   };
 
   # Launcher utilities (remove desktop entries from packages)
