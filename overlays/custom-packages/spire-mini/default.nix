@@ -4,6 +4,6 @@
 { prev }:
 prev.spire.overrideAttrs (_oldAttrs: {
   patches = [
-    ./0001-remove-cloud-components-to-reduce-memory-footprint.patch
+    ./0001-removed-cloud-infra-to-reduce-memory-footprint.patch
   ];
 })
