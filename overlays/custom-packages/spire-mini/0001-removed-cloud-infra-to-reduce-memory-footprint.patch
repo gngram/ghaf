@@ -1,0 +1,265 @@
+From c00cf4f1dd5a3fedd7dc701828d476efe1f09e4a Mon Sep 17 00:00:00 2001
+From: Ganga Ram <Ganga.Ram@tii.ae>
+Date: Tue, 17 Feb 2026 12:46:42 +0400
+Subject: [PATCH] removed cloud infra to reduce memory footprint
+
+Signed-off-by: Ganga Ram <Ganga.Ram@tii.ae>
+---
+ pkg/agent/catalog/keymanager.go         |  1 -
+ pkg/agent/catalog/nodeattestor.go       | 14 --------------
+ pkg/agent/catalog/svidstore.go          |  8 ++++----
+ pkg/agent/catalog/workloadattestor.go   |  6 ------
+ pkg/server/catalog/bundlepublisher.go   |  8 --------
+ pkg/server/catalog/keymanager.go        |  7 -------
+ pkg/server/catalog/nodeattestor.go      | 14 --------------
+ pkg/server/catalog/notifier.go          |  4 ----
+ pkg/server/catalog/upstreamauthority.go | 10 ----------
+ 9 files changed, 4 insertions(+), 68 deletions(-)
+
+diff --git a/pkg/agent/catalog/keymanager.go b/pkg/agent/catalog/keymanager.go
+index 28d12e4c0..12e532195 100644
+--- a/pkg/agent/catalog/keymanager.go
++++ b/pkg/agent/catalog/keymanager.go
+@@ -2,7 +2,6 @@ package catalog
+ 
+ import (
+ 	"github.com/spiffe/spire/pkg/common/catalog"
+-
+ 	"github.com/spiffe/spire/pkg/agent/plugin/keymanager"
+ 	"github.com/spiffe/spire/pkg/agent/plugin/keymanager/disk"
+ 	"github.com/spiffe/spire/pkg/agent/plugin/keymanager/memory"
+diff --git a/pkg/agent/catalog/nodeattestor.go b/pkg/agent/catalog/nodeattestor.go
+index 97af6912a..5721a5ee1 100644
+--- a/pkg/agent/catalog/nodeattestor.go
++++ b/pkg/agent/catalog/nodeattestor.go
+@@ -2,14 +2,7 @@ package catalog
+ 
+ import (
+ 	"github.com/spiffe/spire/pkg/agent/plugin/nodeattestor"
+-	"github.com/spiffe/spire/pkg/agent/plugin/nodeattestor/awsiid"
+-	"github.com/spiffe/spire/pkg/agent/plugin/nodeattestor/azureimds"
+-	"github.com/spiffe/spire/pkg/agent/plugin/nodeattestor/azuremsi"
+-	"github.com/spiffe/spire/pkg/agent/plugin/nodeattestor/gcpiit"
+-	"github.com/spiffe/spire/pkg/agent/plugin/nodeattestor/httpchallenge"
+ 	"github.com/spiffe/spire/pkg/agent/plugin/nodeattestor/jointoken"
+-	"github.com/spiffe/spire/pkg/agent/plugin/nodeattestor/k8spsat"
+-	"github.com/spiffe/spire/pkg/agent/plugin/nodeattestor/sshpop"
+ 	"github.com/spiffe/spire/pkg/agent/plugin/nodeattestor/tpmdevid"
+ 	"github.com/spiffe/spire/pkg/agent/plugin/nodeattestor/x509pop"
+ 	"github.com/spiffe/spire/pkg/common/catalog"
+@@ -35,14 +28,7 @@ func (repo *nodeAttestorRepository) Versions() []catalog.Version {
+ 
+ func (repo *nodeAttestorRepository) BuiltIns() []catalog.BuiltIn {
+ 	return []catalog.BuiltIn{
+-		awsiid.BuiltIn(),
+-		azuremsi.BuiltIn(),
+-		azureimds.BuiltIn(),
+-		gcpiit.BuiltIn(),
+-		httpchallenge.BuiltIn(),
+ 		jointoken.BuiltIn(),
+-		k8spsat.BuiltIn(),
+-		sshpop.BuiltIn(),
+ 		tpmdevid.BuiltIn(),
+ 		x509pop.BuiltIn(),
+ 	}
+diff --git a/pkg/agent/catalog/svidstore.go b/pkg/agent/catalog/svidstore.go
+index 6d9c20745..71d74ddae 100644
+--- a/pkg/agent/catalog/svidstore.go
++++ b/pkg/agent/catalog/svidstore.go
+@@ -2,8 +2,8 @@ package catalog
+ 
+ import (
+ 	"github.com/spiffe/spire/pkg/agent/plugin/svidstore"
+-	"github.com/spiffe/spire/pkg/agent/plugin/svidstore/awssecretsmanager"
+-	"github.com/spiffe/spire/pkg/agent/plugin/svidstore/gcpsecretmanager"
++	//"github.com/spiffe/spire/pkg/agent/plugin/svidstore/awssecretsmanager"
++	//"github.com/spiffe/spire/pkg/agent/plugin/svidstore/gcpsecretmanager"
+ 	"github.com/spiffe/spire/pkg/common/catalog"
+ )
+ 
+@@ -25,8 +25,8 @@ func (repo *svidStoreRepository) Versions() []catalog.Version {
+ 
+ func (repo *svidStoreRepository) BuiltIns() []catalog.BuiltIn {
+ 	return []catalog.BuiltIn{
+-		awssecretsmanager.BuiltIn(),
+-		gcpsecretmanager.BuiltIn(),
++		//awssecretsmanager.BuiltIn(),
++		//gcpsecretmanager.BuiltIn(),
+ 	}
+ }
+ 
+diff --git a/pkg/agent/catalog/workloadattestor.go b/pkg/agent/catalog/workloadattestor.go
+index 4e367815b..a9acfa164 100644
+--- a/pkg/agent/catalog/workloadattestor.go
++++ b/pkg/agent/catalog/workloadattestor.go
+@@ -2,11 +2,8 @@ package catalog
+ 
+ import (
+ 	"github.com/spiffe/spire/pkg/agent/plugin/workloadattestor"
+-	"github.com/spiffe/spire/pkg/agent/plugin/workloadattestor/docker"
+-	"github.com/spiffe/spire/pkg/agent/plugin/workloadattestor/k8s"
+ 	"github.com/spiffe/spire/pkg/agent/plugin/workloadattestor/systemd"
+ 	"github.com/spiffe/spire/pkg/agent/plugin/workloadattestor/unix"
+-	"github.com/spiffe/spire/pkg/agent/plugin/workloadattestor/windows"
+ 	"github.com/spiffe/spire/pkg/common/catalog"
+ )
+ 
+@@ -28,11 +25,8 @@ func (repo *workloadAttestorRepository) Versions() []catalog.Version {
+ 
+ func (repo *workloadAttestorRepository) BuiltIns() []catalog.BuiltIn {
+ 	return []catalog.BuiltIn{
+-		docker.BuiltIn(),
+-		k8s.BuiltIn(),
+ 		systemd.BuiltIn(),
+ 		unix.BuiltIn(),
+-		windows.BuiltIn(),
+ 	}
+ }
+ 
+diff --git a/pkg/server/catalog/bundlepublisher.go b/pkg/server/catalog/bundlepublisher.go
+index e98c8164c..d27df3b86 100644
+--- a/pkg/server/catalog/bundlepublisher.go
++++ b/pkg/server/catalog/bundlepublisher.go
+@@ -3,10 +3,6 @@ package catalog
+ import (
+ 	"github.com/spiffe/spire/pkg/common/catalog"
+ 	"github.com/spiffe/spire/pkg/server/plugin/bundlepublisher"
+-	"github.com/spiffe/spire/pkg/server/plugin/bundlepublisher/awsrolesanywhere"
+-	"github.com/spiffe/spire/pkg/server/plugin/bundlepublisher/awss3"
+-	"github.com/spiffe/spire/pkg/server/plugin/bundlepublisher/gcpcloudstorage"
+-	"github.com/spiffe/spire/pkg/server/plugin/bundlepublisher/k8sconfigmap"
+ )
+ 
+ type bundlePublisherRepository struct {
+@@ -27,10 +23,6 @@ func (repo *bundlePublisherRepository) Versions() []catalog.Version {
+ 
+ func (repo *bundlePublisherRepository) BuiltIns() []catalog.BuiltIn {
+ 	return []catalog.BuiltIn{
+-		awss3.BuiltIn(),
+-		gcpcloudstorage.BuiltIn(),
+-		awsrolesanywhere.BuiltIn(),
+-		k8sconfigmap.BuiltIn(),
+ 	}
+ }
+ 
+diff --git a/pkg/server/catalog/keymanager.go b/pkg/server/catalog/keymanager.go
+index 645570c34..7815bf310 100644
+--- a/pkg/server/catalog/keymanager.go
++++ b/pkg/server/catalog/keymanager.go
+@@ -2,12 +2,8 @@ package catalog
+ 
+ import (
+ 	"github.com/spiffe/spire/pkg/common/catalog"
+-
+ 	"github.com/spiffe/spire/pkg/server/plugin/keymanager"
+-	"github.com/spiffe/spire/pkg/server/plugin/keymanager/awskms"
+-	"github.com/spiffe/spire/pkg/server/plugin/keymanager/azurekeyvault"
+ 	"github.com/spiffe/spire/pkg/server/plugin/keymanager/disk"
+-	"github.com/spiffe/spire/pkg/server/plugin/keymanager/gcpkms"
+ 	"github.com/spiffe/spire/pkg/server/plugin/keymanager/memory"
+ )
+ 
+@@ -29,10 +25,7 @@ func (repo *keyManagerRepository) Versions() []catalog.Version {
+ 
+ func (repo *keyManagerRepository) BuiltIns() []catalog.BuiltIn {
+ 	return []catalog.BuiltIn{
+-		awskms.BuiltIn(),
+ 		disk.BuiltIn(),
+-		gcpkms.BuiltIn(),
+-		azurekeyvault.BuiltIn(),
+ 		memory.BuiltIn(),
+ 	}
+ }
+diff --git a/pkg/server/catalog/nodeattestor.go b/pkg/server/catalog/nodeattestor.go
+index 2e9d540a6..7e0998db5 100644
+--- a/pkg/server/catalog/nodeattestor.go
++++ b/pkg/server/catalog/nodeattestor.go
+@@ -3,14 +3,7 @@ package catalog
+ import (
+ 	"github.com/spiffe/spire/pkg/common/catalog"
+ 	"github.com/spiffe/spire/pkg/server/plugin/nodeattestor"
+-	"github.com/spiffe/spire/pkg/server/plugin/nodeattestor/awsiid"
+-	"github.com/spiffe/spire/pkg/server/plugin/nodeattestor/azureimds"
+-	"github.com/spiffe/spire/pkg/server/plugin/nodeattestor/azuremsi"
+-	"github.com/spiffe/spire/pkg/server/plugin/nodeattestor/gcpiit"
+-	"github.com/spiffe/spire/pkg/server/plugin/nodeattestor/httpchallenge"
+ 	"github.com/spiffe/spire/pkg/server/plugin/nodeattestor/jointoken"
+-	"github.com/spiffe/spire/pkg/server/plugin/nodeattestor/k8spsat"
+-	"github.com/spiffe/spire/pkg/server/plugin/nodeattestor/sshpop"
+ 	"github.com/spiffe/spire/pkg/server/plugin/nodeattestor/tpmdevid"
+ 	"github.com/spiffe/spire/pkg/server/plugin/nodeattestor/x509pop"
+ )
+@@ -35,14 +28,7 @@ func (repo *nodeAttestorRepository) Versions() []catalog.Version {
+ 
+ func (repo *nodeAttestorRepository) BuiltIns() []catalog.BuiltIn {
+ 	return []catalog.BuiltIn{
+-		awsiid.BuiltIn(),
+-		azuremsi.BuiltIn(),
+-		azureimds.BuiltIn(),
+-		gcpiit.BuiltIn(),
+-		httpchallenge.BuiltIn(),
+ 		jointoken.BuiltIn(),
+-		k8spsat.BuiltIn(),
+-		sshpop.BuiltIn(),
+ 		tpmdevid.BuiltIn(),
+ 		x509pop.BuiltIn(),
+ 	}
+diff --git a/pkg/server/catalog/notifier.go b/pkg/server/catalog/notifier.go
+index 0f61612c0..fe7b0a920 100644
+--- a/pkg/server/catalog/notifier.go
++++ b/pkg/server/catalog/notifier.go
+@@ -3,8 +3,6 @@ package catalog
+ import (
+ 	"github.com/spiffe/spire/pkg/common/catalog"
+ 	"github.com/spiffe/spire/pkg/server/plugin/notifier"
+-	"github.com/spiffe/spire/pkg/server/plugin/notifier/gcsbundle"
+-	"github.com/spiffe/spire/pkg/server/plugin/notifier/k8sbundle"
+ )
+ 
+ type notifierRepository struct {
+@@ -27,8 +25,6 @@ func (repo *notifierRepository) Versions() []catalog.Version {
+ 
+ func (repo *notifierRepository) BuiltIns() []catalog.BuiltIn {
+ 	return []catalog.BuiltIn{
+-		gcsbundle.BuiltIn(),
+-		k8sbundle.BuiltIn(),
+ 	}
+ }
+ 
+diff --git a/pkg/server/catalog/upstreamauthority.go b/pkg/server/catalog/upstreamauthority.go
+index 2f77a7838..dfada9aeb 100644
+--- a/pkg/server/catalog/upstreamauthority.go
++++ b/pkg/server/catalog/upstreamauthority.go
+@@ -3,14 +3,9 @@ package catalog
+ import (
+ 	"github.com/spiffe/spire/pkg/common/catalog"
+ 	"github.com/spiffe/spire/pkg/server/plugin/upstreamauthority"
+-	"github.com/spiffe/spire/pkg/server/plugin/upstreamauthority/awspca"
+-	"github.com/spiffe/spire/pkg/server/plugin/upstreamauthority/awssecret"
+ 	"github.com/spiffe/spire/pkg/server/plugin/upstreamauthority/certmanager"
+ 	"github.com/spiffe/spire/pkg/server/plugin/upstreamauthority/disk"
+-	"github.com/spiffe/spire/pkg/server/plugin/upstreamauthority/ejbca"
+-	"github.com/spiffe/spire/pkg/server/plugin/upstreamauthority/gcpcas"
+ 	spireplugin "github.com/spiffe/spire/pkg/server/plugin/upstreamauthority/spire"
+-	"github.com/spiffe/spire/pkg/server/plugin/upstreamauthority/vault"
+ )
+ 
+ type upstreamAuthorityRepository struct {
+@@ -33,14 +28,9 @@ func (repo *upstreamAuthorityRepository) Versions() []catalog.Version {
+ 
+ func (repo *upstreamAuthorityRepository) BuiltIns() []catalog.BuiltIn {
+ 	return []catalog.BuiltIn{
+-		awssecret.BuiltIn(),
+-		awspca.BuiltIn(),
+-		gcpcas.BuiltIn(),
+-		vault.BuiltIn(),
+ 		spireplugin.BuiltIn(),
+ 		disk.BuiltIn(),
+ 		certmanager.BuiltIn(),
+-		ejbca.BuiltIn(),
+ 	}
+ }
+ 
+-- 
+2.51.2
+

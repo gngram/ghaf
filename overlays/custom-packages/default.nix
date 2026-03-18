@@ -19,7 +19,7 @@
   osquery-with-hostname = import ./osquery-with-hostname { inherit prev; };
   papirus-icon-theme = import ./papirus-icon-theme { inherit prev; };
   qemu_kvm = import ./qemu { inherit final prev; };
-  spire = import ./spire { inherit prev; };
+  spire-mini = import ./spire-mini { inherit prev; };
   xdg-desktop-portal-cosmic = import ./cosmic/xdg-desktop-portal-cosmic { inherit prev; };
 })
 # keep-sorted end
