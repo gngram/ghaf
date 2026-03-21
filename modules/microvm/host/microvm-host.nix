@@ -128,23 +128,23 @@ in
           debug.tools.host.enable = config.ghaf.development.debug.tools.enable;
         };
         logging.client.enable = config.ghaf.logging.enable;
-
         common = {
           extraNetworking.hosts.ghaf-host = cfg.extraNetworking;
           policies = lib.mkIf config.ghaf.givc.policyClient.enable {
             ghaf-host = config.ghaf.givc.policyClient.policies;
           };
-        };
-        security.spiffe = {
-          enable = true;
-          agent = {
-            enable = true;
-            serverAddress = "192.168.100.5";
-            serverPort = 8081;
-            trustDomain = "ghaf.internal";
-            joinTokenFile = "/persist/common/spire/tokens/${hostName}.token";
-            trustBundlePath = "/persist/common/spire/bundle.pem";
+          spire.agents = lib.mkIf config.ghaf.security.spire.agent.enable {
+            ghaf-host = {
+              inherit (config.ghaf.security.spire.agent) nodeAttestationMode workloads;
+            };
           };
+        };
+
+        security.spire.agent = {
+          enable = true;
+          nodeAttestationMode = "join_token";
+          trustBundlePath = "/persist/common/spire/bundle.pem";
+          settings.join_token.token = "/persist/common/spire/tokens/${config.networking.hostName}.token";
         };
       };
 
