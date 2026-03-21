@@ -263,16 +263,10 @@ in
         # Security
         security = {
           fail2ban.enable = globalConfig.development.ssh.daemon.enable or false;
-
-          spiffe = {
-            enable = true;
-            agent = {
-              enable = true;
-              serverAddress = "192.168.100.5";
-              serverPort = 8081;
-              trustDomain = "ghaf.internal";
-              joinTokenFile = "/etc/common/spire/tokens/${vmName}.token";
-            };
+          spire.agent = {
+            enable = globalConfig.spire.enable or false;
+            logLevel = if globalConfig.spire.debug then "DEBUG" else "INFO";
+            nodeAttestationMode = "join_token";
           };
         };
       };
