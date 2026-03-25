@@ -263,12 +263,13 @@ in
     security = {
       # Audit - from globalConfig
       audit.enable = lib.mkDefault (globalConfig.security.audit.enable or false);
+
       fail2ban.enable = globalConfig.development.ssh.daemon.enable or false;
 
       spire.agent = {
         enable = globalConfig.spire.enable or false;
         logLevel = if globalConfig.spire.debug then "DEBUG" else "INFO";
-        nodeAttestationMode = "join_token";
+        nodeAttestationMode = "x509pop";
       };
     };
   };
