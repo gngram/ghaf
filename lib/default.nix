@@ -245,6 +245,7 @@ in
     spireNodeAttestationMode = lib.types.enum [
       # Add new modes here
       "join_token"
+      "x509pop"
     ];
 
   };

@@ -10,6 +10,10 @@ let
   cfg = config.ghaf.security.spire.agent;
   dataDir = "/var/lib/spire/agent";
   runtimeDataDir = "/run/spire/agent";
+  certDir = "${runtimeDataDir}/cert";
+  credSourceDir = "/etc/givc";
+  keyPath = "${certDir}/key.pem";
+  certPath = "${certDir}/cert.pem";
   inherit (lib)
     getExe
     mkIf
@@ -17,6 +21,7 @@ let
     mkEnableOption
     types
     optionalString
+    optionals
     ;
   spire-package = config.ghaf.common.spire.package;
 
@@ -26,6 +31,14 @@ let
   joinTokenPlugin = optionalString (cfg.nodeAttestationMode == "join_token") ''
     NodeAttestor "join_token" {
       plugin_data {}
+    }
+  '';
+  x509popPlugin = optionalString (cfg.nodeAttestationMode == "x509pop") ''
+    NodeAttestor "x509pop" {
+      plugin_data {
+        private_key_path = "${keyPath}"
+        certificate_path = "${certPath}"
+      }
     }
   '';
   agentConf = ''
@@ -42,6 +55,7 @@ let
 
     plugins {
       ${joinTokenPlugin}
+      ${x509popPlugin}
 
       WorkloadAttestor "unix" {
         plugin_data {}
@@ -90,7 +104,7 @@ in
     enable = mkEnableOption "SPIRE agent";
     nodeAttestationMode = mkOption {
       type = types.spireNodeAttestationMode;
-      default = "join_token";
+      default = "x509pop";
       description = "Node attestation mode";
     };
     workloads = mkOption {
@@ -130,10 +144,32 @@ in
     environment.systemPackages = [ spire-package ];
     systemd = {
       services = {
+        x509pop-key-setup = mkIf (cfg.nodeAttestationMode == "x509pop") (
+          let
+            script = pkgs.writeShellScript "x509-key-setup" ''
+              set -euo pipefail
+              ${pkgs.rsync}/bin/rsync  --chown=spire-agent:spire-agent --chmod=g+rx ${credSourceDir}/key.pem ${keyPath}
+              ${pkgs.rsync}/bin/rsync  --chown=spire-agent:spire-agent --chmod=g+rx ${credSourceDir}/cert.pem ${certPath}
+            '';
+          in
+          {
+            description = "Prepare bootstrap keys and certificates for spire agent access.";
+            enable = true;
+            serviceConfig = {
+              Type = "oneshot";
+              ExecStart = "${script}";
+              Restart = "no";
+              RemainAfterExit = true;
+            };
+          }
+        );
         spire-agent = {
           requires = [ "network-online.target" ];
           after = [
             "network-online.target"
+          ]
+          ++ optionals (cfg.nodeAttestationMode == "x509pop") [
+            "x509pop-key-setup.service"
           ];
 
           unitConfig = {
@@ -153,9 +189,18 @@ in
           };
         };
       };
+      paths.x509pop-key-setup = {
+        description = "Monitor file existence to trigger service";
+        pathConfig = {
+          PathExists = "${credSourceDir}/key.pem";
+        };
+        wantedBy = [ "local-fs.target" ];
+        after = [ "local-fs.target" ];
+      };
       tmpfiles.rules = [
         "d /run/spire 2750 spire-agent spire-agent - -"
         "d ${runtimeDataDir} 2750 spire-agent spire-agent - -"
+        "d ${certDir} 2750 spire-agent spire-agent - -"
       ];
     };
   };

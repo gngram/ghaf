@@ -21,6 +21,7 @@ let
   runtimeDataDir = "/run/spire/server";
   tokenDir = "/etc/common/spire/tokens";
   socketPath = "${runtimeDataDir}/public/api.sock";
+  caCertPath = "${runtimeDataDir}/private/ca-cert.pem";
   dataDir = "/var/lib/spire/server";
   spire-package = config.ghaf.common.spire.package;
   spireAgents = config.ghaf.common.spire.agents;
@@ -30,9 +31,18 @@ let
     mode: builtins.attrNames (filterAttrs (_vm: cfg: (cfg.nodeAttestationMode == mode)) spireAgents);
 
   joinTokenVMs = getVMsByAttestation "join_token";
+  x509popVMs = getVMsByAttestation "x509pop";
+
   joinTokenPlugin = optionalString (builtins.length joinTokenVMs > 0) ''
     NodeAttestor "join_token" {
       plugin_data {}
+    }
+  '';
+  x509popPlugin = optionalString (builtins.length x509popVMs > 0) ''
+    NodeAttestor "x509pop" {
+      plugin_data {
+        ca_bundle_path = "${caCertPath}"
+      }
     }
   '';
 
@@ -65,6 +75,7 @@ let
         }
       }
       ${joinTokenPlugin}
+      ${x509popPlugin}
     }
   '';
 
@@ -214,6 +225,17 @@ in
               "${dataDir}"
               "${runtimeDataDir}"
             ];
+          };
+        };
+        x509pop-key-setup = mkIf (builtins.length x509popVMs > 0) {
+          description = "Prepare givc keys and certificates for user access.";
+          enable = true;
+          wantedBy = [ "local-fs.target" ];
+          after = [ "local-fs.target" ];
+          serviceConfig = {
+            Type = "oneshot";
+            ExecStart = "${pkgs.rsync}/bin/rsync --chmod=g+rx /etc/givc/ca-cert.pem ${caCertPath}";
+            Restart = "no";
           };
         };
         spire-generate-join-tokens = mkIf (builtins.length joinTokenVMs > 0) {
