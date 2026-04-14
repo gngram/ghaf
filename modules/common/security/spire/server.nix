@@ -22,6 +22,9 @@ let
   tokenDir = "/etc/common/spire/tokens";
   socketPath = "${runtimeDataDir}/public/api.sock";
   caCertPath = "${runtimeDataDir}/private/ca-cert.pem";
+  credSourceDir = "/etc/givc";
+  keyPath = "${runtimeDataDir}/private/key.pem";
+  certPath = "${runtimeDataDir}/private/cert.pem";
   dataDir = "/var/lib/spire/server";
   spire-package = config.ghaf.common.spire.package;
   spireAgents = config.ghaf.common.spire.agents;
@@ -55,6 +58,14 @@ let
       data_dir = "${dataDir}"
       log_level = "${cfg.logLevel}"
       socket_path = "${socketPath}"
+      bundle_endpoint {
+        address = "${config.ghaf.common.spire.server.address}"
+        port = 8443
+        serving_cert {
+          cert_file = "${keyPath}"
+          key_file  = "${certPath}"
+        }
+      }
     }
     health_checks {
       listener_enabled = true
@@ -63,6 +74,7 @@ let
       live_path = "/live"
       ready_path = "/ready"
     }
+
     plugins {
       DataStore "sql" {
         plugin_data {
@@ -224,17 +236,27 @@ in
             ];
           };
         };
-        spire-server-key-setup = mkIf (builtins.length x509popVMs > 0) {
-          description = "Prepare givc keys and certificates for user access.";
-          enable = true;
-          wantedBy = [ "local-fs.target" ];
-          after = [ "local-fs.target" ];
-          serviceConfig = {
-            Type = "oneshot";
-            ExecStart = "${pkgs.rsync}/bin/rsync --chmod=g+rx /etc/givc/ca-cert.pem ${caCertPath}";
-            Restart = "no";
+        spire-server-key-setup =
+          let
+            script = pkgs.writeShellScript "x509-key-setup" ''
+              set -euo pipefail
+              ${pkgs.rsync}/bin/rsync --chmod=g+rx ${credSourceDir}/key.pem ${keyPath}
+              ${pkgs.rsync}/bin/rsync  --chmod=g+rx ${credSourceDir}/cert.pem ${certPath}
+              ${pkgs.rsync}/bin/rsync --chmod=g+rx ${credSourceDir}/ca-cert.pem ${caCertPath}
+            '';
+          in
+          {
+            description = "Prepare bootstrap keys and certificates for spire server access.";
+            enable = true;
+            wantedBy = [ "local-fs.target" ];
+            after = [ "local-fs.target" ];
+            serviceConfig = {
+              Type = "oneshot";
+              ExecStart = "${script}";
+              Restart = "no";
+              RemainAfterExit = true;
+            };
           };
-        };
         spire-generate-join-tokens = mkIf (builtins.length joinTokenVMs > 0) {
           description = "Generate SPIRE join tokens for Ghaf VMs (PoC)";
           wantedBy = [ "multi-user.target" ];

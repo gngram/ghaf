@@ -14,6 +14,7 @@ let
   credSourceDir = "/etc/givc";
   keyPath = "${certDir}/key.pem";
   certPath = "${certDir}/cert.pem";
+  caCertPath = "${certDir}/ca-cert.pem";
   inherit (lib)
     getExe
     mkIf
@@ -49,8 +50,9 @@ let
       server_address = "${config.ghaf.common.spire.server.address}"
       server_port = ${toString config.ghaf.common.spire.server.port}
       trust_domain = "${config.ghaf.common.spire.server.trustDomain}"
-      trust_bundle_path = "${cfg.trustBundlePath}"
       socket_path = "${runtimeDataDir}/agent.sock"
+      trust_bundle_url = "${config.ghaf.common.spire.server.address}:8443/bundle"
+      bootstrap_bundle_path = "${caCertPath}"
       ${joinTokenConf}
     }
 
@@ -150,6 +152,7 @@ in
               set -euo pipefail
               ${pkgs.rsync}/bin/rsync  --chown=spire-agent:spire-agent --chmod=g+rx ${credSourceDir}/key.pem ${keyPath}
               ${pkgs.rsync}/bin/rsync  --chown=spire-agent:spire-agent --chmod=g+rx ${credSourceDir}/cert.pem ${certPath}
+              ${pkgs.rsync}/bin/rsync  --chown=spire-agent:spire-agent --chmod=g+rx ${credSourceDir}/ca-cert.pem ${caCertPath}
             '';
           in
           {
