@@ -158,6 +158,7 @@ in
       spire.agent = {
         enable = globalConfig.spire.enable or false;
         logLevel = if globalConfig.spire.debug then "DEBUG" else "INFO";
+        nodeAttestationMode = "x509pop";
       };
     };
 
