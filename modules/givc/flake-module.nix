@@ -20,6 +20,7 @@
       ./audiovm.nix
       ./appvm.nix
       ./policy.nix
+      ./access-control.nix
     ];
   };
 }
