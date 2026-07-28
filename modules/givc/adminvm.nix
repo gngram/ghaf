@@ -68,7 +68,15 @@ in
       inherit name;
       inherit (config.ghaf.givc.adminConfig) addresses;
       services = map (host: "givc-${host}.service") systemHosts;
-      tls.enable = config.ghaf.givc.enableTls;
+      tls = {
+        enable = config.ghaf.givc.enableTls;
+        type = if config.ghaf.security.spire.agents.downstream.enable then "spire" else "legacy";
+        spire = {
+          agentSocketPath = "${config.ghaf.security.spire.agents.downstream.socketPath}";
+          trustDomain = config.ghaf.common.spire.server.trustDomain;
+        };
+      };
+
       policyAdmin = mkIf policycfg.enable {
         enable = true;
         inherit (policycfg) storePath updater;
@@ -94,7 +102,14 @@ in
           addr = hosts.${hostName}.ipv4;
           port = "9000";
         };
-        tls.enable = config.ghaf.givc.enableTls;
+        tls = {
+          enable = config.ghaf.givc.enableTls;
+          type = if config.ghaf.security.spire.agents.downstream.enable then "spire" else "legacy";
+          spire = {
+            agentSocketPath = "${config.ghaf.security.spire.agents.downstream.socketPath}";
+            trustDomain = config.ghaf.common.spire.server.trustDomain;
+          };
+        };
         admin.transport = lib.head config.ghaf.givc.adminConfig.addresses;
       };
 

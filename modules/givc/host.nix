@@ -46,6 +46,7 @@ in
         ];
       }
     ];
+
     givc.host = {
       enable = true;
       inherit (config.ghaf.givc) debug;
@@ -64,7 +65,14 @@ in
           addr = config.ghaf.networking.hosts.${config.networking.hostName}.ipv4;
           port = "9000";
         };
-        tls.enable = config.ghaf.givc.enableTls;
+        tls = {
+          enable = config.ghaf.givc.enableTls;
+          type = if config.ghaf.security.spire.agents.downstream.enable then "spire" else "legacy";
+          spire = mkIf config.ghaf.security.spire.agents.downstream.enable {
+            agentSocketPath = "${config.ghaf.security.spire.agents.downstream.socketPath}";
+            trustDomain = config.ghaf.common.spire.server.trustDomain;
+          };
+        };
         admin.transport = lib.head config.ghaf.givc.adminConfig.addresses;
       };
       capabilities = {
