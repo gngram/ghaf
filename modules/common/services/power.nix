@@ -32,6 +32,7 @@ let
 
   useGivc = config.ghaf.givc.enable;
   givc-cli = "${pkgs.givc-cli}/bin/givc-cli ${replaceString "/run" "/etc" config.ghaf.givc.cliArgs}";
+  wait-for-unit = pkgs.wait-for-unit.override { cliArgs = config.ghaf.givc.cliArgs; };
   ghaf-powercontrol = pkgs.ghaf-powercontrol.override { ghafConfig = config.ghaf; };
 
   # List of all passthrough nic and audio PCI devices. The generated list of "vendorId:productId" strings
@@ -139,7 +140,7 @@ let
       pkgs.grpcurl
       pkgs.socat
       pkgs.vhotplug
-      pkgs.wait-for-unit
+      wait-for-unit
     ];
     text = ''
       if [[ $# -lt 3 || -z "$1" || -z "$2" || -z "$3" ]]; then
@@ -177,15 +178,13 @@ let
               echo "Signaling suspend to $vm_name..."
               ${givc-cli} start service --vm "$vm_name" suspend.target &
               # Wait until suspend is active
-              ${getExe pkgs.wait-for-unit} ${config.ghaf.networking.hosts.admin-vm.ipv4} 9001 \
+              ${getExe wait-for-unit}  \
               "$vm_name" systemd-suspend.service 10 \
               activating start
               ;;
             resume)
               echo "Signaling resume to $vm_name..."
-              # Stop unit command not yet implemented in GIVC admin service
-              grpcurl -cacert /etc/givc/ca-cert.pem -cert /etc/givc/cert.pem -key /etc/givc/key.pem \
-              -d '{"UnitName":"systemd-suspend.service"}' "$vm_name":9000 systemd.UnitControlService.StopUnit
+              ${givc-cli} stop service systemd-suspend.service --vm "$vm_name"
               ;;
             *)
               echo "Invalid action: $action"
@@ -194,7 +193,6 @@ let
               ;;
           esac
           ;;
-
         pci-suspend)
           case "$action" in
             suspend)

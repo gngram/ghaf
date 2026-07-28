@@ -6,5 +6,6 @@
   imports = [
     ./server.nix
     ./agent.nix
+    ./workloads.nix
   ];
 }

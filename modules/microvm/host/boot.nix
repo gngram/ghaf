@@ -19,8 +19,9 @@ let
     removeSuffix
     optionalAttrs
     ;
-  inherit (config.ghaf.networking) hosts;
   inherit (config.ghaf.virtualization.microvm) appvm;
+
+  wait-for-unit = pkgs.wait-for-unit.override { cliArgs = config.ghaf.givc.cliArgs; };
 
   # Filter system and enabled app VMs
   appVms = lib.attrNames (filterAttrs (_: vm: vm.enable) appvm.vms);
@@ -163,8 +164,7 @@ in
               serviceConfig = {
                 Type = "oneshot";
                 ExecStart = ''
-                  ${pkgs.wait-for-unit}/bin/wait-for-unit \
-                  ${hosts.admin-vm.ipv4} 9001 \
+                  ${wait-for-unit}/bin/wait-for-unit \
                   gui-vm \
                   greetd.service \
                   60
@@ -184,8 +184,7 @@ in
               serviceConfig = {
                 Type = "oneshot";
                 ExecStart = ''
-                  ${pkgs.wait-for-unit}/bin/wait-for-unit \
-                  ${hosts.admin-vm.ipv4} 9001 \
+                  ${wait-for-unit}/bin/wait-for-unit \
                   gui-vm \
                   user-login.service \
                   120
@@ -196,7 +195,6 @@ in
             };
           };
       };
-
       # Boot UI config for GUI VM is now provided by guivm-desktop-features module
       # See: modules/desktop/guivm/boot-ui.nix
     })

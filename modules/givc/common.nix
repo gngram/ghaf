@@ -40,11 +40,16 @@ let
     };
   };
 
+  authType = if config.ghaf.security.spire.agents.downstream.enable then "spire" else "legacy";
+  certsPath = if config.ghaf.givc.host.enable then "/etc/givc" else "/run/givc";
+  trustDomain = config.ghaf.security.spire.agents.downstream.trustDomain;
+  agentSocketPath = config.ghaf.security.spire.agents.downstream.socketPath;
   # Safe access for VMs which don't have ghaf.virtualization.microvm options
   mitmEnabled =
     (config.ghaf.virtualization.microvm.idsvm.enable or false)
     && (config.ghaf.virtualization.microvm.idsvm.mitmproxy.enable or false);
   idsExtraArgs = optionalString mitmEnabled "--user-data-dir=/home/${config.ghaf.users.appUser.name}/.config/google-chrome/Default --test-type --ignore-certificate-errors-spki-list=Bq49YmAq1CG6FuBzp8nsyRXumW7Dmkp7QQ/F82azxGU=";
+
 in
 {
   _file = ./common.nix;
@@ -132,7 +137,6 @@ in
       }
     ];
 
-    # Build admin address here (inside config block) to defer hosts evaluation
     # Use 'or' pattern to handle case where admin-vm isn't yet in hosts during evaluation
     ghaf.givc =
       let
@@ -152,10 +156,13 @@ in
           --name ${adminAddress.name}
           --addr ${adminAddress.addr}
           --port ${adminAddress.port}
-          ${optionalString config.ghaf.givc.enableTls "--cacert /run/givc/ca-cert.pem"}
-          ${optionalString config.ghaf.givc.enableTls "--cert /run/givc/cert.pem"}
-          ${optionalString config.ghaf.givc.enableTls "--key /run/givc/key.pem"}
+          --auth-type ${authType}
+          ${optionalString config.ghaf.givc.enableTls "--cacert ${certsPath}/ca-cert.pem"}
+          ${optionalString config.ghaf.givc.enableTls "--cert ${certsPath}/cert.pem"}
+          ${optionalString config.ghaf.givc.enableTls "--key ${certsPath}/key.pem"}
           ${optionalString (!config.ghaf.givc.enableTls) "--notls"}
+          ${optionalString config.ghaf.security.spire.agents.downstream.enable "--spire-agent-socket ${agentSocketPath}"}
+          ${optionalString config.ghaf.security.spire.agents.downstream.enable "--trust-domain ${trustDomain}"}
         '';
         # Givc admin server configuration
         adminConfig = {

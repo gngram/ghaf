@@ -47,6 +47,7 @@ in
         message = "Policy admin cannot be enabled in appvm.";
       }
     ];
+
     # Configure appvm service
     givc.appvm = {
       enable = true;
@@ -59,7 +60,14 @@ in
           port = "9000";
         };
         admin.transport = lib.head config.ghaf.givc.adminConfig.addresses;
-        tls.enable = config.ghaf.givc.enableTls;
+        tls = {
+          enable = config.ghaf.givc.enableTls;
+          type = if config.ghaf.security.spire.agents.downstream.enable then "spire" else "legacy";
+          spire = {
+            agentSocketPath = "${config.ghaf.security.spire.agents.downstream.socketPath}";
+            trustDomain = config.ghaf.common.spire.server.trustDomain;
+          };
+        };
       };
       capabilities = {
         inherit (cfg) applications services;
