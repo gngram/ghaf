@@ -104,5 +104,7 @@ in
     ghaf.security.audit.extraRules = [
       "-w /etc/givc/ -p wa -k givc-${config.networking.hostName}"
     ];
+    ghaf.security.authn.agent.enable = true;
+    ghaf.security.authn.server.enable = true;
   };
 }

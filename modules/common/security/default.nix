@@ -6,6 +6,7 @@
   imports = [
     ./apparmor
     ./audit
+    ./authn
     ./disk-encryption.nix
     ./fail2ban.nix
     ./pwquality.nix

@@ -32,6 +32,7 @@
     rtl8126 = final.callPackage ./pkgs-by-name/rtl8126/package.nix { };
     update-docs-depends = final.callPackage ./pkgs-by-name/update-docs-depends/package.nix { };
     user-provision = final.callPackage ./pkgs-by-name/user-provision/package.nix { };
+    vm-authn-scope = final.callPackage ./pkgs-by-name/authn/package.nix { };
     wait-for-unit = final.callPackage ./pkgs-by-name/wait-for-unit/package.nix { };
     windows-launcher = final.callPackage ./pkgs-by-name/windows-launcher/package.nix { };
   };

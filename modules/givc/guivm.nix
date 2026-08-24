@@ -221,5 +221,6 @@ in
       "-w /etc/givc/ -p wa -k givc-${hostName}"
       "-w /run/givc/ -p wa -k givc-${hostName}"
     ];
+    ghaf.security.authn.agent.enable = true;
   };
 }
