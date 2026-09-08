@@ -57,15 +57,33 @@ in
       }
     );
 
+    boot.kernelModules = [
+      "vhost_vsock"
+      "vsock_loopback"
+    ];
+
     systemd.services.authn-server = {
       description = "VM authentication host server";
-      wantedBy = [ "sysinit.target" ];
+
+      after = [
+        "systemd-modules-load.service"
+      ];
+      before = [
+        "sysinit.target"
+      ];
+
+      wants = [
+        "dev-vsock.device"
+      ];
+
+      wantedBy = [
+        "sysinit.target"
+      ];
+
       unitConfig = {
         DefaultDependencies = false;
       };
-      bindsTo = [ "dev-vsock.device" ];
-      after = [ "dev-vsock.device" ];
-      before = [ "sysinit.target" ];
+
       serviceConfig = {
         ExecStart = "${cfg.package}/bin/authn-scope-server --config /etc/authn/server.json --genkey";
         Restart = "always";

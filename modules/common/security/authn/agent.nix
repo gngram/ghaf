@@ -53,16 +53,26 @@ in
       }
     );
 
+    boot.kernelModules = lib.optional (!config.givc.host.enable) "vmw_vsock_virtio_transport";
+
     systemd.services.authn-agent = {
       description = "VM authentication agent";
-      # start in early boot
-      wantedBy = [ "sysinit.target" ];
+      after = [
+        "systemd-modules-load.service"
+      ]
+      ++ lib.optional cfg.server.enable "authn-server.service";
+
+      before = [
+        "sysinit.target"
+      ];
+
+      wantedBy = [
+        "sysinit.target"
+      ];
       unitConfig = {
         DefaultDependencies = false;
       };
-      bindsTo = [ "dev-vsock.device" ];
-      after = [ "dev-vsock.device" ];
-      before = [ "sysinit.target" ];
+
       serviceConfig = {
         ExecStart = "${cfg.package}/bin/authn-scope-agent --config /etc/authn/agent.json";
         Restart = "always";
