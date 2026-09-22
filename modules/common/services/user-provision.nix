@@ -108,11 +108,21 @@ let
       # Remove AD parameters if enabled
       ${optionalString cfg.enableAD ''
         rm -rf /var/lib/sssd/*
+        rm -rf /var/lib/sss/*
+        if [ -f /etc/sssd-env ]; then
+          # shellcheck source=/dev/null
+          . /etc/sssd-env
+          if [ -n "''${SSSD_ALLOWED_USER:-}" ]; then
+            rm -rf "/home/''${SSSD_ALLOWED_USER:?}"
+          fi
+        fi
+        rm -f /etc/sssd-env
       ''}
       ${optionalString (cfg.enableAD && config.ghaf.storagevm.enable) ''
         umount /etc/krb5.keytab || true
         rm -f /etc/krb5.keytab || true
         rm -f ${config.ghaf.storagevm.mountPath}/etc/krb5.keytab || true
+        rm -f ${config.ghaf.storagevm.mountPath}/etc/sssd-env || true
       ''}
 
       # Remove provisioning lock. -f because this script runs under `set -e` and
@@ -146,11 +156,11 @@ let
         fi
       ''
       + optionalString cfg.enableAD ''
-        # Check if machine is joined to AD domain
-        if klist -k /etc/krb5.keytab | grep -qi "host/" 2>/dev/null; then
-          exit 1 # machine is enrolled, no need for provisioning
+        # Check if machine is joined to AD domain and user is assigned
+        if klist -k /etc/krb5.keytab | grep -qi "host/" 2>/dev/null && [ -f /etc/sssd-env ]; then
+          exit 1 # machine is enrolled and provisioned, no need for provisioning
         else
-          exit 0 # machine is not enrolled, needs provisioning
+          exit 0 # machine is not enrolled or user not assigned, needs provisioning
         fi
       ''
       + optionalString (!cfg.enableHomed && !cfg.enableAD) ''

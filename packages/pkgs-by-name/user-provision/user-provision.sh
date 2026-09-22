@@ -754,30 +754,83 @@ perform_ad_join() {
     return 1
   fi
 
-  # Prompt for admin credentials (interactive mode only)
-  local ad_user=""
-  while [[ -z $ad_user ]]; do
-    ad_user=$(prompt_input "Enter admin username:" "e.g., admin") || return 1
-  done
+  local assigned_user=""
+  local allowed_group=""
 
-  # Handle existing keytab if persistent storage is available to force re-creation
-  if [[ -n $STORAGE_MOUNT_PATH ]]; then
-    if [[ -e $KERBEROS_KEYTAB ]]; then
-      debug "Persistent storage detected: removing existing keytab for recreation"
-      umount "$KERBEROS_KEYTAB" 2>/dev/null || true
-      rm -f "$KERBEROS_KEYTAB"
+  while true; do
+    # 1. Prompt for assigned user and group before OU
+    assigned_user=""
+    while [[ -z $assigned_user ]]; do
+      assigned_user=$(prompt_input "Enter assigned user:" "e.g., username") || return 1
+      assigned_user="${assigned_user#"${assigned_user%%[![:space:]]*}"}"
+      assigned_user="${assigned_user%"${assigned_user##*[![:space:]]}"}"
+      assigned_user="${assigned_user%@*}"
+      assigned_user="${assigned_user#*\\}"
+    done
+
+    allowed_group=$(prompt_input "Enter allowed group (optional):" "e.g., ghaf-users") || return 1
+    allowed_group="${allowed_group#"${allowed_group%%[![:space:]]*}"}"
+    allowed_group="${allowed_group%"${allowed_group##*[![:space:]]}"}"
+
+    # 2. Prompt for target Organizational Unit (single OU only)
+    local ou=""
+    ou=$(prompt_input "Enter OU name (leave empty for default):" "e.g., Laptops") || return 1
+    ou="${ou#"${ou%%[![:space:]]*}"}"
+    ou="${ou%"${ou##*[![:space:]]}"}"
+
+    local target_ou_dn=""
+    if [[ -n $ou ]]; then
+      local base_dn="${BASE_DN:-$(get_base_dn "$domain")}"
+      if [[ $ou =~ ^[Oo][Uu]= || $ou =~ ^[Cc][Nn]= ]]; then
+        if [[ $ou =~ [Dd][Cc]= ]]; then
+          target_ou_dn="$ou"
+        else
+          target_ou_dn="${ou},${base_dn}"
+        fi
+      else
+        target_ou_dn="OU=${ou},${base_dn}"
+      fi
+      show_info "Target OU: $target_ou_dn"
     fi
-  fi
 
-  # Attempt domain join
-  show_info "Attempting to join domain..."
+    # 3. Prompt for admin credentials (interactive mode only)
+    local ad_user=""
+    while [[ -z $ad_user ]]; do
+      ad_user=$(prompt_input "Enter admin username:" "e.g., admin") || return 1
+    done
 
-  until adcli join --user="$ad_user" --domain="$domain" --domain-realm="$realm" --verbose; do
-    show_error "Failed to join the Active Directory domain."
-    prompt_confirm "Retry join?" || return 1
+    # Handle existing keytab if persistent storage is available to force re-creation
+    if [[ -n $STORAGE_MOUNT_PATH ]]; then
+      if [[ -e $KERBEROS_KEYTAB ]]; then
+        debug "Persistent storage detected: removing existing keytab for recreation"
+        umount "$KERBEROS_KEYTAB" 2>/dev/null || true
+        rm -f "$KERBEROS_KEYTAB"
+      fi
+    fi
+
+    local join_args=(
+      "--user=$ad_user"
+      "--domain=$domain"
+      "--domain-realm=$realm"
+      "--verbose"
+    )
+    if [[ -n $target_ou_dn ]]; then
+      join_args+=("--domain-ou=$target_ou_dn")
+    fi
+
+    # Attempt domain join
+    show_info "Attempting to join domain..."
+
+    if adcli join "${join_args[@]}"; then
+      show_success "Successfully joined domain: $domain"
+      break
+    else
+      show_error "Failed to join the Active Directory domain."
+      if ! prompt_confirm "Retry join?" "Yes" "No"; then
+        return 1
+      fi
+    fi
   done
-
-  show_success "Successfully joined domain: $domain"
 
   # Copy and remount keytab to persistent storage
   if [[ -n $STORAGE_MOUNT_PATH ]]; then
@@ -788,6 +841,30 @@ perform_ad_join() {
     debug "Keytab copied to persistent storage: ${STORAGE_MOUNT_PATH}$KERBEROS_KEYTAB"
   fi
 
+  # Write /etc/sssd-env
+  local sssd_env_file="/etc/sssd-env"
+  local target_uid=1000
+  local target_gid=100
+
+  cat >"$sssd_env_file" <<EOF
+SSSD_ALLOWED_USER="$assigned_user"
+SSSD_ALLOWED_GROUP="$allowed_group"
+SSSD_USER_UID="$target_uid"
+SSSD_USER_GID="$target_gid"
+SSSD_DOMAIN_NAME="$domain"
+EOF
+  chmod 0600 "$sssd_env_file"
+
+  if [[ -n $STORAGE_MOUNT_PATH ]]; then
+    mkdir -p "${STORAGE_MOUNT_PATH}/etc"
+    rm -f "${STORAGE_MOUNT_PATH}$sssd_env_file" 2>/dev/null || true
+    cp "$sssd_env_file" "${STORAGE_MOUNT_PATH}$sssd_env_file"
+    chmod 0600 "${STORAGE_MOUNT_PATH}$sssd_env_file"
+    mount --bind "${STORAGE_MOUNT_PATH}$sssd_env_file" "$sssd_env_file" 2>/dev/null || true
+    debug "SSSD env copied to persistent storage: ${STORAGE_MOUNT_PATH}$sssd_env_file"
+  fi
+
+  show_success "Successfully joined domain $domain and provisioned user $assigned_user"
   return 0
 }
 
@@ -961,6 +1038,14 @@ screen_main_menu() {
           show_section "  Domain: $joined_domains"
         else
           show_section "  Domain: joined (unknown)"
+        fi
+
+        if [[ -f /etc/sssd-env ]]; then
+          local current_user
+          current_user=$(grep "^SSSD_ALLOWED_USER=" /etc/sssd-env 2>/dev/null | cut -d'=' -f2 | tr -d '"' || true)
+          if [[ -n $current_user ]]; then
+            show_section "  Assigned User: $current_user"
+          fi
         fi
       else
         show_section "  Domain: no domain joined"
