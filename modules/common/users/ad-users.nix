@@ -10,6 +10,8 @@ let
   inherit (lib)
     mkEnableOption
     mkIf
+    mkOption
+    types
     ;
 in
 {
@@ -17,6 +19,31 @@ in
 
   options.ghaf.users.adUsers = {
     enable = mkEnableOption "Active Directory user configuration";
+
+    override = {
+      enable = mkOption {
+        description = "Enable override for Active Directory user configuration.";
+        type = types.bool;
+        default = true;
+      };
+      uid = mkOption {
+        description = "UID override for Active Directory user.";
+        type = types.int;
+        default = 1000;
+      };
+
+      gid = mkOption {
+        description = "GID override for Active Directory user.";
+        type = types.int;
+        default = 1000;
+      };
+
+      ghafUserGroup = mkOption {
+        description = "Ghaf user group override for Active Directory user.";
+        type = types.str;
+        default = "ghaf-users";
+      };
+    };
   };
 
   config = mkIf cfg.enable {

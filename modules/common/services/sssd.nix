@@ -8,6 +8,7 @@
 }:
 let
   cfg = config.ghaf.services.sssd;
+  adUserCfg = config.ghaf.users.adUsers;
 
   inherit (lib)
     boolToString
@@ -31,40 +32,198 @@ let
     lib.filter (serviceName: serviceName != null) (
       [
         cfg.pam.displayManagerService
+        "greetd"
         "cosmic-greeter"
         "login"
         "su"
         "su-l"
+        "sudo"
       ]
       ++ lib.optional config.services.openssh.enable "sshd"
     )
   );
+
+  adVerifyPkg = pkgs.writeShellApplication {
+    name = "ad-verify-device-user";
+    runtimeInputs = [
+      pkgs.coreutils
+      pkgs.util-linux
+    ];
+    text = ''
+      USER="''${PAM_USER:-''${1:-}}"
+      if [ -z "$USER" ]; then
+        exit 0
+      fi
+
+      # Allow all system users (UID < 1000)
+      USER_UID="$(id -u "$USER" 2>/dev/null || echo "")"
+      if [ -n "$USER_UID" ] && [ "$USER_UID" -lt 1000 ]; then
+        exit 0
+      fi
+
+      DEVICE_USERS_FILE="/var/lib/sss/device-users"
+
+      # If the device is not yet provisioned, allow authentication to proceed
+      if [ ! -f "$DEVICE_USERS_FILE" ]; then
+        exit 0
+      fi
+
+      # If the device is already assigned, verify that the logging-in user is the owner
+      ASSIGNED_USER="$(head -n 1 "$DEVICE_USERS_FILE" | tr -d '[:space:]')"
+      if [ -n "$ASSIGNED_USER" ] && [ "$ASSIGNED_USER" = "$USER" ]; then
+        exit 0
+      fi
+
+      logger -t ad-verify-device-user "Permission denied: device is assigned to '$ASSIGNED_USER', rejecting authentication attempt by '$USER'"
+      exit 1
+    '';
+  };
+
+  adProvisionPkg = pkgs.writeShellApplication {
+    name = "ad-provision-local-user";
+    runtimeInputs = [
+      pkgs.coreutils
+      pkgs.sssd
+      pkgs.systemd
+      pkgs.util-linux
+    ];
+    text = ''
+      # Security: If not running as root (e.g. during screen unlock in an active user session), skip provisioning
+      if [ "$(id -u)" -ne 0 ]; then
+        exit 0
+      fi
+
+      USER="''${PAM_USER:-''${1:-}}"
+      if [ -z "$USER" ]; then
+        exit 0
+      fi
+
+      # Allow all system users (UID < 1000)
+      USER_UID="$(id -u "$USER" 2>/dev/null || echo "")"
+      if [ -n "$USER_UID" ] && [ "$USER_UID" -lt 1000 ]; then
+        exit 0
+      fi
+
+      DEVICE_USERS_FILE="/var/lib/sss/device-users"
+      mkdir -p /var/lib/sss
+      chown root:root /var/lib/sss
+      chmod 755 /var/lib/sss
+
+      # If already assigned to another user, reject immediately
+      if [ -f "$DEVICE_USERS_FILE" ]; then
+        EXISTING_USER="$(head -n 1 "$DEVICE_USERS_FILE" | tr -d '[:space:]')"
+        if [ -n "$EXISTING_USER" ] && [ "$EXISTING_USER" != "$USER" ]; then
+          logger -t ad-provision-local-user "Permission denied: device is assigned to '$EXISTING_USER', rejecting '$USER'"
+          exit 1
+        fi
+      else
+        # First-time provisioning: Assign the device to this user
+        logger -t ad-provision-local-user "Assigning device to user '$USER' after successful authentication..."
+        TMP_FILE="/var/lib/sss/.device-users.tmp.$$"
+        (
+          umask 022
+          echo "$USER" > "$TMP_FILE"
+          chown root:root "$TMP_FILE"
+          chmod 644 "$TMP_FILE"
+          mv -f "$TMP_FILE" "$DEVICE_USERS_FILE"
+        )
+      fi
+
+      # Ensure correct permissions on the device-users file
+      chown root:root "$DEVICE_USERS_FILE"
+      chmod 644 "$DEVICE_USERS_FILE"
+
+      ${optionalString adUserCfg.override.enable ''
+        # Conditional override for user UID and GID
+        sss_override user-del "$USER" 2>&1 || true
+        sss_override user-add "$USER" -u ${toString adUserCfg.override.uid} -g ${toString adUserCfg.override.gid} -h "/home/$USER" -s /run/current-system/sw/bin/bash 2>&1 || true
+        sss_override group-del "${adUserCfg.override.ghafUserGroup}" 2>&1 || true
+        sss_override group-add "${adUserCfg.override.ghafUserGroup}" -g 100 2>&1 || true
+        sss_cache -u "$USER" 2>&1 || true
+        sss_cache -g "${adUserCfg.override.ghafUserGroup}" 2>&1 || true
+        sss_cache -E 2>&1 || true
+      ''}
+
+      # Ensure user home directory exists with secure permissions
+      HOME_DIR="/home/$USER"
+      if [ ! -d "$HOME_DIR" ]; then
+        mkdir -p "$HOME_DIR"
+      fi
+
+      # Recursively fix ownership and permissions
+      chown -R ${
+        if adUserCfg.override.enable then
+          "${toString adUserCfg.override.uid}:${toString adUserCfg.override.gid}"
+        else
+          "\"$USER:\""
+      } "$HOME_DIR" 2>/dev/null || true
+      chmod 700 "$HOME_DIR" 2>/dev/null || true
+
+      logger -t ad-provision-local-user "Device successfully assigned and provisioned for '$USER'."
+      exit 0
+    '';
+  };
+
   mkStrictAccessPamService =
     serviceName:
-    {
-      makeHomeDir = true;
-      # Enforce SSSD account decisions (e.g. AD GPO deny) on every interactive login path.
-      sssdStrictAccess = lib.mkDefault true;
-    }
-    // optionalAttrs (serviceName == cfg.pam.displayManagerService) {
-      rules = {
-        auth = {
-          # Disable ccreds pam modules to avoid conflicts with SSSD
-          ccreds-store.enable = lib.mkForce false;
-          ccreds-validate.enable = lib.mkForce false;
-
-          # Allow both unix and sss auth
-          unix.control = lib.mkForce "sufficient";
-          sss.control = lib.mkForce "sufficient";
+    lib.recursiveUpdate
+      {
+        makeHomeDir = true;
+        # Enforce SSSD account decisions (e.g. AD GPO deny) on every interactive login path.
+        sssdStrictAccess = lib.mkDefault true;
+        rules = {
+          auth = {
+            ad_verify_user = {
+              enable = lib.mkDefault true;
+              control = "requisite";
+              modulePath = "${pkgs.linux-pam}/lib/security/pam_exec.so";
+              args = [
+                "${lib.getExe adVerifyPkg}"
+              ];
+              order = 10050;
+            };
+            pam_group = {
+              enable = lib.mkDefault true;
+              control = "optional";
+              modulePath = "${pkgs.linux-pam}/lib/security/pam_group.so";
+              args = [ "debug" ];
+              order = 10350;
+            };
+          };
+          account = {
+            ad_provision = {
+              enable = lib.mkDefault true;
+              control = "requisite";
+              modulePath = "${pkgs.linux-pam}/lib/security/pam_exec.so";
+              args = [
+                "${lib.getExe adProvisionPkg}"
+              ];
+              order = 10450;
+            };
+          };
         };
-      };
+      }
+      (
+        optionalAttrs (serviceName == cfg.pam.displayManagerService) {
+          rules = {
+            auth = {
+              # Disable ccreds pam modules to avoid conflicts with SSSD
+              ccreds-store.enable = lib.mkForce false;
+              ccreds-validate.enable = lib.mkForce false;
 
-      # Disable Kerberos pam modules
-      rules.auth.krb5.enable = lib.mkForce false;
-      rules.account.krb5.enable = lib.mkForce false;
-      rules.password.krb5.enable = lib.mkForce false;
-      rules.session.krb5.enable = lib.mkForce false;
-    };
+              # Allow both unix and sss auth
+              unix.control = lib.mkForce "sufficient";
+              sss.control = lib.mkForce "sufficient";
+            };
+          };
+
+          # Disable Kerberos pam modules
+          rules.auth.krb5.enable = lib.mkForce false;
+          rules.account.krb5.enable = lib.mkForce false;
+          rules.password.krb5.enable = lib.mkForce false;
+          rules.session.krb5.enable = lib.mkForce false;
+        }
+      );
 
   # SSSD configuration template
   sssdConfig = ''
@@ -280,8 +439,8 @@ in
           "no_session"
           "never"
         ];
-        default = "never";
-        description = "PAM initgroups scheme. Set to 'never' to disable automatic group initialization.";
+        default = "always";
+        description = "PAM initgroups scheme. Set to 'always' to ensure secondary group memberships are populated during authentication.";
       };
       extraConfig = mkOption {
         type = types.nullOr types.lines;
@@ -321,6 +480,16 @@ in
       kcm = hasKcm;
       config = sssdConfig;
     };
+
+    environment.systemPackages = [
+      adVerifyPkg
+      adProvisionPkg
+    ];
+
+    systemd.tmpfiles.rules = [
+      "d /home 0755 root root -"
+      "d /var/lib/sss 0755 root root -"
+    ];
 
     # Watch for the Kerberos keytab creation on first boot and start SSSD automatically
     systemd.paths.sssd-keytab = lib.mkIf hasKerberosRealm {
@@ -367,6 +536,12 @@ in
               group = "root";
               mode = "0755"; # TODO check minimal permissions (nss)
             }
+            {
+              directory = "/var/lib/AccountsService";
+              user = "root";
+              group = "root";
+              mode = "0755";
+            }
           ];
           # Kerberos keytab storage
           files = [
@@ -384,6 +559,11 @@ in
         ];
       })
     ];
+
+    # Configure PAM group assignments for domain users (/etc/security/group.conf)
+    environment.etc."security/group.conf".text = ''
+      *;*;*;Al0000-2400;users
+    '';
 
     # PAM configuration for all interactive login entrypoints.
     #

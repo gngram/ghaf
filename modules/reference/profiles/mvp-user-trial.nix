@@ -8,12 +8,12 @@
 let
   cfg = config.ghaf.reference.profiles.mvp-user-trial;
   # Active Directory configuration
-  enableAD = false;
-  adDomain = "ghaf-test.com";
+  enableAD = true;
+  adDomain = "ghaf.local";
   # AD Domain controller URL
-  dcUrl = "vm-ghaf-dev-dc.ghaf-test.com";
+  dcUrl = "ghaf-dc.ghaf.local";
   # AD Domain controller IP address
-  dcIp = "10.52.33.4";
+  dcIp = "192.168.0.167";
 
 in
 {
@@ -269,7 +269,7 @@ in
     security.sudo = lib.mkIf enableAD {
       extraConfig = ''
         %ghaf-admins ALL=(ALL) ALL
-        %ghaf-admins@ghaf-test.com ALL=(ALL) ALL
+        %ghaf-admins@ghaf.local ALL=(ALL) ALL
       '';
     };
   };
