@@ -31,8 +31,16 @@ let
     else
       config.ghaf.users;
   hasLoginUser = userConfig.homedUser.enable || userConfig.adUsers.enable;
-  loginUserHasDynamicUid = userConfig.adUsers.enable;
-  loginUserUid = toString (userConfig.homedUser.uid or 1000);
+  loginUserHasDynamicUid =
+    userConfig.adUsers.enable && !(userConfig.adUsers.override.enable or false);
+  loginUserUid = toString (
+    if userConfig.homedUser.enable then
+      (userConfig.homedUser.uid or 1000)
+    else if (userConfig.adUsers.override.enable or false) then
+      (userConfig.adUsers.override.uid or 1000)
+    else
+      1000
+  );
   loginUserSessionDir = "/run/ghaf/session";
   loginUserUidFile = "${loginUserSessionDir}/gui-vm-user.uid";
   sharedVmDirectoryPaths = [

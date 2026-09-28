@@ -32,27 +32,19 @@ in
 
       # TII development AD test domain (formerly hardcoded in ad-users.nix). Realm,
       # KDC servers and LDAP URIs derive from domain and controllers (active-directory/options.nix).
-      identity.activeDirectory.domains."ghaf-test.com" = {
+      identity.activeDirectory.domains."ghaf.local" = {
         ad = {
-          domain = "ghaf-test.com";
-          controllers = [ "vm-ghaf-dev-dc.ghaf-test.com" ];
+          domain = "ghaf.local";
+          controllers = [ "ghaf-dc.ghaf.local" ];
         };
         dnsProvider = {
-          name = "vm-ghaf-dev-dc.ghaf-test.com";
-          ipAddress = "10.52.33.4";
+          name = "ghaf-dc.ghaf.local";
+          ipAddress = "192.168.0.167";
         };
         ldap = {
           schema = "ad";
-          # TII's AD publishes POSIX attributes; map them RFC2307-style
-          # (idMapping stays false, the shared type's default).
-          extraConfig = ''
-            # RFC2307 User and group attribute mappings
-            ldap_user_name = uid
-            ldap_user_uid_number = uidNumber
-            ldap_user_gid_number = gidNumber
-            ldap_user_home_directory = homeDirectory
-            ldap_user_shell = loginShell
-          '';
+          idMapping = true;
+
         };
       };
 

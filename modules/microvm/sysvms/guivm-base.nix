@@ -42,15 +42,6 @@ let
   vmName = "gui-vm";
   guiSessionShareEnabled = hostConfig.users.profile.ad-users.enable or false;
   guiSessionUidFile = "/run/ghaf/session/gui-vm-user.uid";
-  activeDirectoryDomains = lib.mapAttrs (
-    _: domain:
-    domain
-    // {
-      # This is a read-only option in the AD domain module, so forwarding
-      # evaluated host config verbatim would redefine the module default.
-      ldap = removeAttrs (domain.ldap or { }) [ "enableSasl" ];
-    }
-  ) (hostConfig.users.active-directory.domains or { });
   fprintEnabled = lib.ghaf.features.isEnabledFor globalConfig "fprint" vmName;
   yubikeyEnabled = lib.ghaf.features.isEnabledFor globalConfig "yubikey" vmName;
   brightnessEnabled = lib.ghaf.features.isEnabledFor globalConfig "brightness" vmName;
@@ -170,9 +161,9 @@ in
       profile = hostConfig.users.profile or { };
       admin = hostConfig.users.admin or { };
       managed = hostConfig.users.managed or [ ];
-      active-directory.domains = activeDirectoryDomains;
       adUsers = {
         enable = hostConfig.users.profile.ad-users.enable or false;
+        override = hostConfig.users.adUsers.override or { };
       };
       homedUser = {
         enable = hostConfig.users.profile.homed-user.enable or false;
@@ -192,8 +183,14 @@ in
     # Common namespace - from hostConfig
     # Required for killswitch, etc. to access hardware device info
     common = hostConfig.common or { };
-    # Enable dynamic hostname export for VMs
-    identity.vmHostNameExport.enable = true;
+    # Enable dynamic hostname export and setter for VMs
+    identity = {
+      vmHostNameExport.enable = true;
+      vmHostNameSetter = {
+        enable = true;
+        prefix = "dev";
+      };
+    };
 
     # System
     type = "system-vm";
